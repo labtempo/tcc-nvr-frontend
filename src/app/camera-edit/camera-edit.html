@@ -1,1 +1,13 @@
-<p>camera-edit works!</p>
+<h2>Editar Câmera</h2>
+<form (ngSubmit)="onUpdateCamera()">
+  <input type="text" [(ngModel)]="camera.name" name="name" placeholder="Nome" required>
+  <br>
+  <input type="text" [(ngModel)]="camera.rtsp_url" name="rtsp_url" placeholder="URL RTSP" required>
+  <br>
+  <label>
+    <input type="checkbox" [(ngModel)]="camera.is_recording" name="is_recording"> Está gravando?
+  </label>
+  <br>
+  <button type="submit">Salvar Alterações</button>
+  <button type="button" [routerLink]="['/cameras']">Cancelar</button>
+</form>

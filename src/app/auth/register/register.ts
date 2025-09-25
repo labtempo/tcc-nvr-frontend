@@ -1,11 +1,35 @@
 import { Component } from '@angular/core';
+import { AuthService } from '../auth';
+import { Router, RouterLink} from '@angular/router';
+import { FormsModule } from '@angular/forms'; 
 
 @Component({
   selector: 'app-register',
-  imports: [],
+  standalone: true, 
+  imports: [
+    FormsModule,    
+    RouterLink     
+  ],
   templateUrl: './register.html',
-  styleUrl: './register.css'
+  styleUrls: ['./register.css']
 })
-export class Register {
+export class RegisterComponent {
+  email = '';
+  full_name = '';
+  password = '';
 
+  constructor(private authService: AuthService, private router: Router) { }
+
+  onRegister(): void {
+    this.authService.register(this.email, this.full_name, this.password).subscribe(
+      () => {
+        alert('Registro bem-sucedido! Faça login para continuar.');
+        this.router.navigate(['/login']);
+      },
+      error => {
+        console.error('Erro no registro:', error);
+        alert('Erro no registro. Tente novamente.');
+      }
+    );
+  }
 }
