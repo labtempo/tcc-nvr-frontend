@@ -16,7 +16,11 @@ export class CameraService {
   }
 
   getCameras(): Observable<any[]> {
-    return this.http.get<any[]>(`${this.apiUrl}/cameras`, { headers: this.getAuthHeaders() });
+    const userId = localStorage.getItem('user_id');
+    if (!userId) {
+        return new Observable(observer => observer.error('User not logged in'));
+    }
+    return this.http.get<any[]>(`${this.apiUrl}/camera/user/${userId}`, { headers: this.getAuthHeaders() });
   }
 
   createCamera(camera: any): Observable<any> {
