@@ -1,0 +1,80 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  background: #f5f7fa;
+}
+
+h2 {
+  margin-top: 40px;
+  color: #005266;
+  font-family: 'Segoe UI', Arial, sans-serif;
+  font-size: 2rem;
+  letter-spacing: 1px;
+}
+
+form {
+  background: #fff;
+  padding: 32px 28px;
+  border-radius: 14px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.07);
+  border: 1px solid #e3eaf0;
+  display: flex;
+  flex-direction: column;
+  min-width: 340px;
+  margin-top: 32px;
+}
+
+input[type="text"] {
+  padding: 10px;
+  margin-bottom: 18px;
+  border: 1px solid #b0bec5;
+  border-radius: 6px;
+  font-size: 16px;
+  font-family: inherit;
+}
+
+label {
+  font-size: 15px;
+  color: #005266;
+  margin-bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+input[type="checkbox"] {
+  accent-color: #005266;
+  width: 18px;
+  height: 18px;
+}
+
+button[type="submit"],
+button[type="button"] {
+  background: #005266;
+  color: #fff;
+  border: none;
+  padding: 12px 0;
+  border-radius: 6px;
+  font-size: 16px;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+button[type="button"] {
+  background: #e3eaf0;
+  color: #005266;
+  margin-bottom: 0;
+}
+
+button[type="submit"]:hover {
+  background: #007399;
+}
+
+button[type="button"]:hover {
+  background: #cce3f6;
+  color: #007399;
+}

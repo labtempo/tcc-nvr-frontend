@@ -1,8 +1,10 @@
 <h2>Criar Nova Câmera</h2>
 <form (ngSubmit)="onCreateCamera()">
-  <input type="text" [(ngModel)]="camera.name" name="name" placeholder="Nome" required>
+  <label for="name">Nome</label>
+  <input id="name" type="text" [(ngModel)]="camera.name" name="name" placeholder="Nome" required>
   <br>
-  <input type="text" [(ngModel)]="camera.rtsp_url" name="rtsp_url" placeholder="URL RTSP" required>
+  <label for="rtsp_url">URL RTSP</label>
+  <input id="rtsp_url" type="text" [(ngModel)]="camera.rtsp_url" name="rtsp_url" placeholder="URL RTSP" required>
   <br>
   <label>
     <input type="checkbox" [(ngModel)]="camera.is_recording" name="is_recording"> Está gravando?

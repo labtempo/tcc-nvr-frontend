@@ -1,11 +1,16 @@
 <h2>Lista de Câmeras</h2>
-<button (click)="goToCreate()">Adicionar Nova Câmera</button>
-<br><br>
+<button class="add-camera-btn" (click)="goToCreate()">Adicionar Nova Câmera</button>
 
 <ul>
   <li *ngFor="let camera of cameras">
-    ID: {{ camera.id }} | Nome: {{ camera.name }} | URL: {{ camera.rtsp_url }}
-    <button [routerLink]="['/cameras/edit', camera.id]">Editar</button>
-    <button (click)="deleteCamera(camera.id)">Deletar</button>
+    <span class="camera-info">
+      <strong>ID:</strong> {{ camera.id }} &nbsp;|&nbsp;
+      <strong>Nome:</strong> {{ camera.name }} &nbsp;|&nbsp;
+      <strong>URL:</strong> {{ camera.rtsp_url }}
+    </span>
+    <span class="action-btns">
+      <button [routerLink]="['/cameras/edit', camera.id]">Editar</button>
+      <button (click)="deleteCamera(camera.id)">Deletar</button>
+    </span>
   </li>
 </ul>
