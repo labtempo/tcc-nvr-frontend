@@ -24,8 +24,10 @@ export class CameraService {
   }
 
   createCamera(camera: any): Observable<any> {
-    return this.http.post<any>(`${this.apiUrl}/cameras`, camera, { headers: this.getAuthHeaders() });
-  }
+  const userId = localStorage.getItem('user_id');
+  const cameraWithUser = { ...camera, created_by_user_Id: userId };
+  return this.http.post<any>(`${this.apiUrl}/camera`, cameraWithUser, { headers: this.getAuthHeaders() });
+}
 
   updateCamera(id: number, camera: any): Observable<any> {
     return this.http.put<any>(`${this.apiUrl}/cameras/${id}`, camera, { headers: this.getAuthHeaders() });
