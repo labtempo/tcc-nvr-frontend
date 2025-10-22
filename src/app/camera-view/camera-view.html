@@ -1,0 +1,20 @@
+<div *ngIf="!camera">
+  <p>Carregando câmera...</p>
+</div>
+
+<div *ngIf="camera" class="view-container">
+  <h2>Assistindo: {{ camera.name }}</h2>
+  <div class="video-wrapper">
+    <iframe *ngIf="videoUrl" 
+            [src]="videoUrl" 
+            width="100%" 
+            height="100%" 
+            frameborder="0" 
+            allowfullscreen>
+    </iframe>
+    <div *ngIf="!videoUrl" class="video-error">
+      <p>Não foi possível carregar o stream de vídeo.</p>
+    </div>
+  </div>
+  <button (click)="goBack()">Voltar para a Lista</button>
+</div>

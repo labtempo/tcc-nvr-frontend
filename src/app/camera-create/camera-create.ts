@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CameraService } from '../camera';
+import { AuthService } from '../auth/auth';
 
 @Component({
   selector: 'app-camera-create',
@@ -17,11 +18,14 @@ export class CameraCreateComponent {
   camera = {
     name: '',
     rtsp_url: '',
-    is_recording: false
+    is_recording: false,
+    created_by_user_id: null as number | null 
   };
 
-  constructor(private cameraService: CameraService, private router: Router) { }
+  constructor(private cameraService: CameraService, private router: Router, private authService: AuthService) { 
 
+    this.camera.created_by_user_id = this.authService.getUserId();
+  }
   onCreateCamera(): void {
     this.cameraService.createCamera(this.camera).subscribe(
       () => {

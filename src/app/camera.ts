@@ -36,4 +36,8 @@ export class CameraService {
   deleteCamera(id: number): Observable<any> {
     return this.http.delete<any>(`${this.apiUrl}/cameras/${id}`, { headers: this.getAuthHeaders() });
   }
+
+  getCameraById(id: number): Observable<any> {
+   return this.http.get<any>(`${this.apiUrl}/camera/${id}`);
+}
 }
