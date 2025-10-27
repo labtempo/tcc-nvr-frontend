@@ -45,7 +45,7 @@ export class CameraViewComponent implements OnInit {
           this.camera = cam;
           if (this.camera && this.camera.name) {
             const formattedName = this.formatName(this.camera.name);
-            const url = `http://localhost:8888/live/${formattedName}/`;
+            const url = `http://localhost:8889/live/${formattedName}/`;
             this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
           } else {
             alert('Câmera não encontrada.');
