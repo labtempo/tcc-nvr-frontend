@@ -19,19 +19,23 @@ export class LoginComponent {
   email = '';
   password = '';
   errorMessage: string | null = null;
+  loading = false;
 
   constructor(private authService: AuthService, private router: Router) { }
 
   onLogin(): void {
-    this.errorMessage = null; // Clear any previous error messages
+    this.errorMessage = null;
+    this.loading = true;
     this.authService.login(this.email, this.password).subscribe(
       () => {
         console.log('Login bem-sucedido!');
         this.router.navigate(['/cameras']);
+        this.loading = false;
       },
       error => {
         console.error('Erro no login:', error);
         this.errorMessage = 'Erro no login. Verifique suas credenciais.';
+        this.loading = false;
       }
     );
   }
