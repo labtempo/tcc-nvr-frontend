@@ -1,11 +1,31 @@
-<div class="login-container">
-  <h2>Login</h2>
-  <form (ngSubmit)="onLogin()">
-    <input type="email" [(ngModel)]="email" name="email" placeholder="Email" required>
-    <br>
-    <input type="password" [(ngModel)]="password" name="password" placeholder="Senha" required>
-    <br>
-    <button type="submit">Entrar</button>
-  </form>
-  <a [routerLink]="['/register']">Não tem uma conta? Registre-se</a>
+
+<div class="container mt-5">
+  <div class="row justify-content-center">
+    <div class="col-md-6">
+      <div class="card">
+        <div class="card-header">
+          <h3 class="text-center">Login</h3>
+        </div>
+        <div class="card-body">
+          <form (ngSubmit)="onLogin()">
+            <div class="form-group">
+              <label for="email">Email</label>
+              <input type="email" id="email" class="form-control" [(ngModel)]="email" name="email" placeholder="Email" required>
+            </div>
+            <div class="form-group">
+              <label for="password">Senha</label>
+              <input type="password" id="password" class="form-control" [(ngModel)]="password" name="password" placeholder="Senha" required>
+            </div>
+            <button type="submit" class="btn btn-primary btn-block">Entrar</button>
+            <div *ngIf="errorMessage" class="alert alert-danger mt-3">
+              {{ errorMessage }}
+            </div>
+          </form>
+        </div>
+        <div class="card-footer text-center">
+          <a [routerLink]="['/register']">Não tem uma conta? Registre-se</a>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
