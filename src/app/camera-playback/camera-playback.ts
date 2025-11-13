@@ -23,7 +23,7 @@ export class CameraPlaybackComponent implements OnInit {
   timelineMin: number = 0;
   timelineMax: number = 0;
   timelineValue: number = 0;
-  private timelineChangeTimeout: any;
+  private timelineChangeTimeout: ReturnType<typeof setTimeout> | undefined;
 
   constructor(
     private route: ActivatedRoute,
