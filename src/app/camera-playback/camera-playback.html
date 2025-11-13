@@ -1,0 +1,75 @@
+<div class="playback-container">
+  <div class="header">
+    <h2>Histórico de Gravações</h2>
+    
+    <div class="controls">
+      <div class="date-picker">
+        <label>Data:</label>
+        <input type="date" [(ngModel)]="selectedDate" (change)="loadRecordings()">
+      </div>
+      
+      <button [routerLink]="['/cameras']" class="btn-back">Voltar para Lista</button>
+    </div>
+  </div>
+
+  <div class="content-area">
+    
+    <div class="sidebar">
+      <h3>Segmentos</h3>
+      
+      <div *ngIf="isLoading" class="loading">Carregando...</div>
+      
+      <div *ngIf="!isLoading && recordings.length === 0" class="empty-state">
+        Nenhuma gravação encontrada nesta data.
+      </div>
+
+      <ul class="recording-list">
+        <li *ngFor="let rec of recordings">
+          <button class="segment-btn" (click)="playSegment(rec)">
+            <span class="time">▶ {{ vcformatTime(rec.start) }}</span>
+            <span class="duration">{{ formatDuration(rec.duration) }}</span>
+          </button>
+        </li>
+      </ul>
+    </div>
+
+    <div class="player-wrapper">
+      <div *ngIf="currentVideoUrl; else noVideo" class="video-container">
+        <video 
+          [src]="currentVideoUrl" 
+          controls 
+          autoplay 
+          width="100%" 
+          height="100%">
+          Seu navegador não suporta a tag de vídeo.
+        </video>
+        
+        <!-- Timeline Virtual -->
+        <div class="timeline-container" *ngIf="recordings.length > 0">
+          <div class="timeline-labels">
+            <span class="timeline-start">{{ vcformatTime(timelineMin) }}</span>
+            <span class="timeline-current">{{ vcformatTime(timelineValue) }}</span>
+            <span class="timeline-end">{{ vcformatTime(timelineMax) }}</span>
+          </div>
+          <input 
+            type="range" 
+            class="timeline-slider"
+            [min]="timelineMin" 
+            [max]="timelineMax" 
+            [(ngModel)]="timelineValue" 
+            (change)="onTimelineChange($event)"
+            (input)="timelineValue = +$event.target.value">
+        </div>
+        
+        <div class="status-bar">Reproduzindo via Proxy Seguro</div>
+      </div>
+
+      <ng-template #noVideo>
+        <div class="placeholder">
+          <p>Selecione um segmento na lista ao lado para assistir.</p>
+        </div>
+      </ng-template>
+    </div>
+
+  </div>
+</div>

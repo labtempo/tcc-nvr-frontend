@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { RegisterComponent } from './register';
+import { CameraPlaybackComponent } from './camera-playback';
 
-describe('RegisterComponent', () => {
-  let component: RegisterComponent;
-  let fixture: ComponentFixture<RegisterComponent>;
+describe('CameraPlaybackComponent', () => {
+  let component: CameraPlaybackComponent;
+  let fixture: ComponentFixture<CameraPlaybackComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [RegisterComponent]
+      imports: [CameraPlaybackComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(RegisterComponent);
+    fixture = TestBed.createComponent(CameraPlaybackComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

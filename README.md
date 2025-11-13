@@ -1,59 +1,173 @@
-# TccNvrFrontend
+# TCC NVR Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.2.
+Sistema frontend Angular para gerenciamento de câmeras e gravações NVR (Network Video Recorder). Este projeto implementa uma interface web para controle de câmeras IP e visualização de gravações VOD (Video on Demand) integrado com MediaMTX.
 
-## Development server
+## Visão Geral do Sistema
 
-To start a local development server, run:
+### Arquitetura
+- **Framework**: Angular 20.3.x
+- **Arquitetura**: Standalone Components (sem módulos NgModule)
+- **Estilo**: CSS puro
+- **Backend API**: http://127.0.0.1:8000/api/v1
+- **Autenticação**: JWT Bearer Token
+- **Armazenamento**: LocalStorage para tokens e dados de usuário
+
+### Estrutura de Pastas
+
+```
+src/app/
+├── auth/                     # Módulo de autenticação
+│   ├── login/               # Componente de login
+│   ├── register/            # Componente de registro
+│   ├── auth-guard.ts        # Guard de rotas protegidas
+│   ├── auth.ts              # Serviço de autenticação
+│   └── token-interceptor.ts # Interceptor HTTP para tokens
+├── camera-list/             # Listagem de câmeras
+├── camera-create/           # Criação de câmeras
+├── camera-edit/             # Edição de câmeras
+├── camera-view/             # Visualização de câmeras
+├── camera.ts                # Serviço de câmeras
+├── app.routes.ts            # Configuração de rotas
+└── app.config.ts            # Configuração da aplicação
+```
+
+### Funcionalidades Implementadas
+
+#### 1. **Sistema de Autenticação**
+- **Login**: Componente para autenticação de usuários
+- **Registro**: Cadastro de novos usuários
+- **Auth Guard**: Proteção de rotas que requerem autenticação
+- **Token Interceptor**: Inclusão automática de Bearer token em requisições HTTP
+- **Auth Service**: Gerenciamento de tokens, login/logout e estado de autenticação
+
+**Principais métodos do AuthService**:
+```typescript
+login(email: string, password: string): Observable<any>
+register(email: string, fullName: string, password: string): Observable<any>
+getToken(): string | null
+isLoggedIn(): boolean
+logout(): void
+getUserId(): number | null
+```
+
+#### 2. **Gerenciamento de Câmeras**
+- **Listagem**: Exibição de todas as câmeras do usuário
+- **Criação**: Formulário para adicionar novas câmeras
+- **Edição**: Modificação de câmeras existentes
+- **Visualização**: Interface para assistir transmissão das câmeras
+- **Exclusão**: Remoção de câmeras
+
+**Principais métodos do CameraService**:
+```typescript
+getCameras(): Observable<any[]>             // Lista câmeras do usuário
+createCamera(camera: any): Observable<any>   // Cria nova câmera
+updateCamera(id: number, camera: any): Observable<any>
+deleteCamera(id: number): Observable<any>
+getCameraById(id: number): Observable<any>
+```
+
+#### 3. **Sistema de Rotas**
+```typescript
+{ path: 'login', component: LoginComponent },
+{ path: 'register', component: RegisterComponent },
+{ path: 'cameras', component: CameraListComponent, canActivate: [authGuard] },
+{ path: 'cameras/create', component: CameraCreateComponent, canActivate: [authGuard] },
+{ path: 'cameras/edit/:id', component: CameraEditComponent, canActivate: [authGuard] },
+{ path: 'cameras/view/:id', component: CameraViewComponent, canActivate: [authGuard] },
+{ path: '', redirectTo: '/login', pathMatch: 'full' },
+```
+
+### Tecnologias e Padrões Utilizados
+
+#### **Angular Standalone Components**
+- Todos os componentes são standalone (não utilizam NgModule)
+- Imports diretos nos componentes
+- Configuração via `app.config.ts`
+
+#### **Interceptors HTTP**
+- `TokenInterceptor`: Adiciona automaticamente o Bearer token em todas as requisições
+- Configurado via `HTTP_INTERCEPTORS` no `app.config.ts`
+
+#### **Guards de Rota**
+- `authGuard`: Verifica se o usuário está autenticado
+- Redireciona para `/login` se não autenticado
+- Implementado como função (`CanActivateFn`)
+
+#### **Gerenciamento de Estado**
+- LocalStorage para persistência de tokens e dados do usuário
+- Serviços injetáveis para gerenciamento de estado global
+- RxJS Observables para comunicação assíncrona
+
+### Fluxo de Autenticação
+
+1. **Login**: Usuário fornece email/senha
+2. **Token**: API retorna `access_token` e `user_id`
+3. **Armazenamento**: Dados salvos no LocalStorage
+4. **Interceptor**: Token incluído automaticamente em requisições
+5. **Guards**: Rotas protegidas verificam presença do token
+6. **Logout**: Remove dados do LocalStorage
+
+### Integração com Backend
+
+#### **Endpoints Utilizados**
+```
+POST /api/v1/login                    # Autenticação
+POST /api/v1/usuarios                 # Registro
+GET  /api/v1/camera/user/{userId}     # Câmeras do usuário
+POST /api/v1/camera                   # Criar câmera
+PUT  /api/v1/cameras/{id}             # Editar câmera
+DELETE /api/v1/cameras/{id}           # Deletar câmera
+GET  /api/v1/camera/{id}              # Detalhes da câmera
+```
+
+#### **Headers Padrão**
+```typescript
+Authorization: Bearer {access_token}
+Content-Type: application/json
+```
+
+### Próximas Implementações Sugeridas
+
+Para implementar a funcionalidade de **listagem de gravações VOD** do MediaMTX:
+
+1. **Novo Serviço**: `RecordingService` para integração com MediaMTX
+2. **Novo Componente**: `CameraRecordingsComponent` para listar gravações
+3. **Nova Rota**: `/cameras/:id/recordings`
+4. **Player VOD**: Componente para reprodução de gravações
+5. **Integração**: Endpoint do MediaMTX para listagem de gravações
+
+## Development Server
+
+Para iniciar o servidor de desenvolvimento:
 
 ```bash
 ng serve
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+A aplicação estará disponível em `http://localhost:4200/`
 
-## Code scaffolding
+## Build
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
-
-```bash
-ng generate component component-name
-```
-
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
+Para fazer o build do projeto:
 
 ```bash
 ng build
 ```
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+Os artefatos serão armazenados no diretório `dist/`
 
-## Running unit tests
+## Testes
 
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
+Para executar os testes unitários:
 
 ```bash
 ng test
 ```
 
-## Running end-to-end tests
+## Docker
 
-For end-to-end (e2e) testing, run:
+O projeto inclui configuração Docker com nginx para produção:
 
 ```bash
-ng e2e
+docker-compose up
 ```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.

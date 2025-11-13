@@ -49,15 +49,22 @@ li {
   justify-content: space-between;
   font-size: 16px;
   font-family: 'Segoe UI', Arial, sans-serif;
+  flex-wrap: nowrap;
 }
 
 .camera-info {
   flex: 1;
   color: #333;
+  margin-right: 16px;
+}
+
+.action-btns {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
 }
 
 .action-btns button {
-  margin-left: 12px;
   background: #e3eaf0;
   color: #005266;
   border: none;
@@ -66,6 +73,7 @@ li {
   font-size: 15px;
   cursor: pointer;
   transition: background 0.2s;
+  white-space: nowrap;
 }
 
 .action-btns button:hover {

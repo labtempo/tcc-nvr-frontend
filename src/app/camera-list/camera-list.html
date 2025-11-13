@@ -11,6 +11,8 @@
     <span class="action-btns">
       <button [routerLink]="['/cameras/view', camera.id]">Assistir</button>
       
+      <button [routerLink]="['/cameras/playback', camera.id]">Histórico</button>
+      
       <button [routerLink]="['/cameras/edit', camera.id]">Editar</button>
       <button (click)="deleteCamera(camera.id)">Deletar</button>
     </span>

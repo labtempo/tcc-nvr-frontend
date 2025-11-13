@@ -1,6 +1,12 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient,HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+
+export interface RecordingSegment {
+  start: string;
+  duration: number;
+  url: string;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -39,5 +45,32 @@ export class CameraService {
 
   getCameraById(id: number): Observable<any> {
    return this.http.get<any>(`${this.apiUrl}/camera/${id}`);
-}
+  }
+
+  getRecordings(id: number, start?: string, end?: string): Observable<RecordingSegment[]> {
+    let params = new HttpParams();
+    if (start) params = params.set('start', start);
+    if (end) params = params.set('end', end);
+
+    return this.http.get<RecordingSegment[]>(`${this.apiUrl}/camera/${id}/recordings`, { 
+      headers: this.getAuthHeaders(),
+      params: params 
+    });
+  }
+
+  getPlaybackUrl(id: number, start: string, duration: number): Observable<{ playbackUrl: string }> {
+    const params = new HttpParams()
+      .set('start', start)
+      .set('duration', duration.toString());
+
+    return this.http.get<{ playbackUrl: string }>(`${this.apiUrl}/camera/${id}/playback-url`, { 
+      headers: this.getAuthHeaders(),
+      params: params 
+    });
+  }
+
+  getApiBaseUrl(): string {
+    return this.apiUrl;
+  }
+
 }
