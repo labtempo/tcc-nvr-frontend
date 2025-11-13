@@ -1,15 +1,20 @@
-<h2>Editar Câmera</h2>
-<form (ngSubmit)="onUpdateCamera()">
-  <label for="name">Nome</label>
-  <input id="name" type="text" [(ngModel)]="camera.name" name="name" placeholder="Nome" required>
-  <br>
-  <label for="rtsp_url">URL RTSP</label>
-  <input id="rtsp_url" type="text" [(ngModel)]="camera.rtsp_url" name="rtsp_url" placeholder="URL RTSP" required>
-  <br>
-  <label>
-    <input type="checkbox" [(ngModel)]="camera.is_recording" name="is_recording"> Está gravando?
-  </label>
-  <br>
-  <button type="submit">Salvar Alterações</button>
-  <button type="button" [routerLink]="['/cameras']">Cancelar</button>
-</form>
+
+<div class="container mt-4">
+  <h2>Editar Câmera</h2>
+  <form (ngSubmit)="onUpdateCamera()">
+    <div class="form-group">
+      <label for="name">Nome</label>
+      <input id="name" type="text" class="form-control" [(ngModel)]="camera.name" name="name" placeholder="Nome" required>
+    </div>
+    <div class="form-group">
+      <label for="rtsp_url">URL RTSP</label>
+      <input id="rtsp_url" type="text" class="form-control" [(ngModel)]="camera.rtsp_url" name="rtsp_url" placeholder="URL RTSP" required>
+    </div>
+    <div class="form-group form-check">
+      <input type="checkbox" class="form-check-input" id="is_recording" [(ngModel)]="camera.is_recording" name="is_recording">
+      <label class="form-check-label" for="is_recording">Está gravando?</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+    <button type="button" class="btn btn-secondary" [routerLink]="['/cameras']">Cancelar</button>
+  </form>
+</div>
