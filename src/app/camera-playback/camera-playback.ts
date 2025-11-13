@@ -25,7 +25,6 @@ export class CameraPlaybackComponent implements OnInit {
   timelineValue: number = 0;
   private timelineChangeTimeout: ReturnType<typeof setTimeout> | undefined;
 
-
   constructor(
     private route: ActivatedRoute,
     private cameraService: CameraService,
