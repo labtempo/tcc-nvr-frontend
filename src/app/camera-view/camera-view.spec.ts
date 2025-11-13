@@ -9,9 +9,7 @@ describe('CameraViewComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [CameraViewComponent]
-      // Você precisará mockar ActivatedRoute, Router, CameraService, etc.
-      // Mas para o boilerplate inicial, isso é o padrão.
-    })
+   })
     .compileComponents();
 
     fixture = TestBed.createComponent(CameraViewComponent);
