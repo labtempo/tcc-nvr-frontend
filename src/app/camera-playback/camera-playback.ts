@@ -19,7 +19,7 @@ export class CameraPlaybackComponent implements OnInit {
   currentVideoUrl: SafeUrl | null = null;
   isLoading = false;
 
-  // Timeline virtual variables
+ 
   timelineMin: number = 0;
   timelineMax: number = 0;
   timelineValue: number = 0;
@@ -53,7 +53,7 @@ export class CameraPlaybackComponent implements OnInit {
         this.recordings = data;
         this.isLoading = false;
         
-        // Configurar timeline virtual
+        
         this.setupTimeline();
       },
       error: (err) => {
@@ -68,7 +68,7 @@ export class CameraPlaybackComponent implements OnInit {
 this.cameraService.getPlaybackUrl(this.cameraId, segment.start, segment.duration)
       .subscribe({
         next: (res) => {
-          const apiHost = 'http://127.0.0.1:8000'; // Ajuste se seu host for diferente
+          const apiHost = 'http://127.0.0.1:8000'; 
           const fullUrl = `${apiHost}${res.playbackUrl}`;
           
           console.log("Carregando vídeo seguro:", fullUrl);
@@ -90,16 +90,16 @@ this.cameraService.getPlaybackUrl(this.cameraId, segment.start, segment.duration
       return;
     }
 
-    // Definir timeline min como timestamp do primeiro segmento
+    
     this.timelineMin = new Date(this.recordings[0].start).getTime();
     
-    // Definir timeline max como timestamp do último segmento + duração
+    
     const lastRecording = this.recordings[this.recordings.length - 1];
     const lastStart = new Date(lastRecording.start).getTime();
-    const lastDurationMs = lastRecording.duration * 1000; // converter segundos para ms
+    const lastDurationMs = lastRecording.duration * 1000; 
     this.timelineMax = lastStart + lastDurationMs;
     
-    // Definir valor inicial
+    
     this.timelineValue = this.timelineMin;
   }
 
@@ -107,18 +107,18 @@ this.cameraService.getPlaybackUrl(this.cameraId, segment.start, segment.duration
     const timestamp = parseInt(event.target.value);
     this.timelineValue = timestamp;
     
-    // Debounce para evitar muitas chamadas ao arrastar
+    
     if (this.timelineChangeTimeout) {
       clearTimeout(this.timelineChangeTimeout);
     }
     
     this.timelineChangeTimeout = setTimeout(() => {
-      // Converter timestamp para ISO string
+      
       const isoString = new Date(timestamp).toISOString();
       
-      // Carregar vídeo a partir desse ponto com duração de 3600s (1 hora)
+      
       this.loadVideoAtTime(isoString, 3600);
-    }, 500); // Aguarda 500ms após parar de arrastar
+    }, 500); 
   }
 
   loadVideoAtTime(startTime: string, duration: number): void {
