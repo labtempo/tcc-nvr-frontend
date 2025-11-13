@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { tap } from 'rxjs/operators';
+import { finalize, tap } from 'rxjs/operators';
+import { LoadingService } from '../loading/loading.service';
 
 @Injectable({
   providedIn: 'root'
@@ -9,10 +10,10 @@ import { tap } from 'rxjs/operators';
 export class AuthService {
   private apiUrl = 'http://127.0.0.1:8000/api/v1'; 
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private loadingService: LoadingService) { }
 
   login(email: string, password: string): Observable<any> {
-    
+    this.loadingService.show();
     const loginData = { email, password };
     
     return this.http.post<any>(`${this.apiUrl}/login`, loginData)
@@ -20,13 +21,18 @@ export class AuthService {
         tap(response => {
           localStorage.setItem('access_token', response.access_token);
           localStorage.setItem('user_id', response.user_id);
-        })
+        }),
+        finalize(() => this.loadingService.hide())
       );
   }
 
   register(email: string, fullName: string, password: string): Observable<any> {
+    this.loadingService.show();
     const registerData = { email, full_name: fullName, password };
-    return this.http.post<any>(`${this.apiUrl}/usuarios`, registerData);
+    return this.http.post<any>(`${this.apiUrl}/usuarios`, registerData)
+      .pipe(
+        finalize(() => this.loadingService.hide())
+      );
   }
 
   getToken(): string | null {
