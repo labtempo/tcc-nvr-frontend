@@ -136,6 +136,29 @@ Para implementar a funcionalidade de **listagem de gravações VOD** do MediaMTX
 4. **Player VOD**: Componente para reprodução de gravações
 5. **Integração**: Endpoint do MediaMTX para listagem de gravações
 
+## Servidor Mock de Backend
+
+Para facilitar o desenvolvimento e os testes do frontend sem a necessidade de um backend real, o projeto inclui um servidor mock baseado em Express.js.
+
+### Como Iniciar
+
+1.  **Abra um terminal separado** na raiz do projeto.
+2.  Execute o seguinte comando para iniciar o servidor mock:
+
+```bash
+npm run mock:server
+```
+
+O servidor mock será executado em `http://localhost:8000`, que é a URL configurada no ambiente de desenvolvimento (`src/environments/environment.ts`).
+
+**Importante**: Mantenha este terminal em execução enquanto desenvolve. A aplicação Angular (`ng serve`) deve ser executada em seu próprio terminal.
+
+### Credenciais de Teste
+
+Para fazer login no sistema usando o servidor mock, utilize as seguintes credenciais:
+- **Email**: `test@test.com`
+- **Senha**: `password`
+
 ## Development Server
 
 Para iniciar o servidor de desenvolvimento:
