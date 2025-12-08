@@ -3,12 +3,13 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { finalize, tap } from 'rxjs/operators';
 import { LoadingService } from '../loading/loading.service';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private apiUrl = 'http://127.0.0.1:8000/api/v1'; 
+  private apiUrl = environment.apiUrl; 
 
   constructor(private http: HttpClient, private loadingService: LoadingService) { }
 
