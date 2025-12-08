@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterOutlet } from '@angular/router';
 import { LoadingComponent } from './loading/loading';
 import { LoadingService } from './loading/loading.service';
+import { CollapseModule } from 'ngx-bootstrap/collapse';
 
 @Component({
   selector: 'app-root',
@@ -10,13 +11,15 @@ import { LoadingService } from './loading/loading.service';
   imports: [
     CommonModule,
     RouterOutlet,
-    LoadingComponent
+    LoadingComponent,
+    CollapseModule
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.css']
 })
 export class AppComponent {
   title = 'tcc-nvr-frontend';
+  isCollapsed = true;
 
   constructor(public loadingService: LoadingService) {}
 }
