@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { CameraService } from '../camera';
+import { Camera } from '../camera.model';
 
 @Component({
   selector: 'app-camera-list',
@@ -14,7 +15,7 @@ import { CameraService } from '../camera';
   styleUrls: ['./camera-list.css']
 })
 export class CameraListComponent implements OnInit {
-  cameras: any[] = [];
+  cameras: Camera[] = [];
 
   constructor(private cameraService: CameraService, private router: Router) { }
 

@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CameraService } from '../camera';
-import { AuthService } from '../auth/auth';
+import { Camera } from '../camera.model';
 
 @Component({
   selector: 'app-camera-create',
@@ -15,17 +15,14 @@ import { AuthService } from '../auth/auth';
   styleUrls: ['./camera-create.css']
 })
 export class CameraCreateComponent {
-  camera = {
+  camera: Partial<Camera> = {
     name: '',
     rtsp_url: '',
-    is_recording: false,
-    created_by_user_id: null as number | null 
+    is_recording: false
   };
 
-  constructor(private cameraService: CameraService, private router: Router, private authService: AuthService) { 
-
-    this.camera.created_by_user_id = this.authService.getUserId();
-  }
+  constructor(private cameraService: CameraService, private router: Router) {}
+  
   onCreateCamera(): void {
     this.cameraService.createCamera(this.camera).subscribe(
       () => {

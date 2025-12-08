@@ -1,6 +1,9 @@
 import { Injectable } from '@angular/core';
-import { HttpClient,HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { AuthService } from './auth/auth';
+import { environment } from '../environments/environment';
+import { Camera } from './camera.model';
 
 export interface RecordingSegment {
   start: string;
@@ -12,39 +15,31 @@ export interface RecordingSegment {
   providedIn: 'root'
 })
 export class CameraService {
-  private apiUrl = 'http://127.0.0.1:8000/api/v1';
+  private apiUrl = environment.apiUrl;
 
-  constructor(private http: HttpClient) { }
+  constructor(private http: HttpClient, private authService: AuthService) { }
 
-  private getAuthHeaders() {
-    const token = localStorage.getItem('access_token');
-    return { 'Authorization': `Bearer ${token}` };
+  getCameras(): Observable<Camera[]> {
+    const userId = this.authService.getUserId();
+    return this.http.get<Camera[]>(`${this.apiUrl}/camera/user/${userId}`);
   }
 
-  getCameras(): Observable<any[]> {
-    const userId = localStorage.getItem('user_id');
-    if (!userId) {
-        return new Observable(observer => observer.error('User not logged in'));
-    }
-    return this.http.get<any[]>(`${this.apiUrl}/camera/user/${userId}`, { headers: this.getAuthHeaders() });
+  createCamera(camera: Partial<Camera>): Observable<Camera> {
+    const userId = this.authService.getUserId();
+    const cameraWithUser = { ...camera, created_by_user_Id: userId };
+    return this.http.post<Camera>(`${this.apiUrl}/camera`, cameraWithUser);
   }
 
-  createCamera(camera: any): Observable<any> {
-  const userId = localStorage.getItem('user_id');
-  const cameraWithUser = { ...camera, created_by_user_Id: userId };
-  return this.http.post<any>(`${this.apiUrl}/camera`, cameraWithUser, { headers: this.getAuthHeaders() });
-}
-
-  updateCamera(id: number, camera: any): Observable<any> {
-    return this.http.put<any>(`${this.apiUrl}/cameras/${id}`, camera, { headers: this.getAuthHeaders() });
+  updateCamera(id: number, camera: Partial<Camera>): Observable<Camera> {
+    return this.http.put<Camera>(`${this.apiUrl}/cameras/${id}`, camera);
   }
 
   deleteCamera(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/cameras/${id}`, { headers: this.getAuthHeaders() });
+    return this.http.delete<any>(`${this.apiUrl}/cameras/${id}`);
   }
 
-  getCameraById(id: number): Observable<any> {
-   return this.http.get<any>(`${this.apiUrl}/camera/${id}`);
+  getCameraById(id: number): Observable<Camera> {
+    return this.http.get<Camera>(`${this.apiUrl}/camera/${id}`);
   }
 
   getRecordings(id: number, start?: string, end?: string): Observable<RecordingSegment[]> {
@@ -53,7 +48,6 @@ export class CameraService {
     if (end) params = params.set('end', end);
 
     return this.http.get<RecordingSegment[]>(`${this.apiUrl}/camera/${id}/recordings`, { 
-      headers: this.getAuthHeaders(),
       params: params 
     });
   }
@@ -64,7 +58,6 @@ export class CameraService {
       .set('duration', duration.toString());
 
     return this.http.get<{ playbackUrl: string }>(`${this.apiUrl}/camera/${id}/playback-url`, { 
-      headers: this.getAuthHeaders(),
       params: params 
     });
   }
@@ -72,5 +65,4 @@ export class CameraService {
   getApiBaseUrl(): string {
     return this.apiUrl;
   }
-
 }
