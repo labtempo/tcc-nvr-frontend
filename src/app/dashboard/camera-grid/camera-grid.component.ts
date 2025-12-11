@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CameraFeedComponent } from '../camera-feed/camera-feed.component';
 import { CameraService } from '../../camera';
 import { Camera } from '../../camera.model';
@@ -54,7 +55,9 @@ import { SettingsService } from '../../settings/settings.service';
           <app-camera-feed 
             [name]="cam.name" 
             [status]="getStatus(cam)" 
-            [hlsUrl]="cam.visualisation_url_hls || ''">
+            [hlsUrl]="''"
+            [iframeUrl]="getIframeUrl(cam)"
+            [rawUrl]="getRawUrl(cam)">
           </app-camera-feed>
         </div>
       </div>
@@ -180,10 +183,14 @@ import { SettingsService } from '../../settings/settings.service';
 export class CameraGridComponent implements OnInit {
   cameras: Camera[] = [];
   gridSize: number = 2;
+  // RESTORED: Using SafeResourceUrl as requested in feat/dashboard
+  urlCache: Map<number, SafeResourceUrl> = new Map();
+  rawUrlCache: Map<number, string> = new Map();
 
   constructor(
     private cameraService: CameraService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private sanitizer: DomSanitizer
   ) { }
 
   ngOnInit() {
@@ -213,9 +220,29 @@ export class CameraGridComponent implements OnInit {
     this.cameraService.getCameras().subscribe({
       next: (data) => {
         this.cameras = data;
-        this.sortCameras();
+        this.updateUrlCache(); // Logic from feat/dashboard
+        this.sortCameras();    // Logic from feat/settings-page
       },
       error: (err) => console.error(err)
+    });
+  }
+
+  updateUrlCache() {
+    this.cameras.forEach(cam => {
+      // Prioritize URL from Backend (Mock or Real) if present
+      let url = cam.visualisation_url_hls;
+
+      // Fallback to local WebRTC generator if empty
+      if (!url) {
+        // Use dash formatting for URLs (common standard for keys)
+        const formattedName = cam.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        url = `http://localhost:8889/live/${formattedName}/`;
+      }
+
+      if (!this.urlCache.has(cam.id)) {
+        this.urlCache.set(cam.id, this.sanitizer.bypassSecurityTrustResourceUrl(url));
+        this.rawUrlCache.set(cam.id, url);
+      }
     });
   }
 
@@ -240,13 +267,18 @@ export class CameraGridComponent implements OnInit {
   get gridStyle() {
     return {
       'grid-template-columns': `repeat(${this.gridSize}, 1fr)`
-      // Removed fixed rows to allow scrolling
     };
   }
 
   getStatus(cam: Camera): string {
-    return cam.visualisation_url_hls ? 'LIVE' : 'OFFLINE';
+    return (cam.name) ? 'LIVE' : 'OFFLINE';
   }
 
+  getIframeUrl(cam: Camera): SafeResourceUrl | null {
+    return this.urlCache.get(cam.id) || null;
+  }
 
+  getRawUrl(cam: Camera): string {
+    return this.rawUrlCache.get(cam.id) || '';
+  }
 }

@@ -31,11 +31,11 @@ export class CameraService {
   }
 
   updateCamera(id: number, camera: Partial<Camera>): Observable<Camera> {
-    return this.http.put<Camera>(`${this.apiUrl}/cameras/${id}`, camera);
+    return this.http.put<Camera>(`${this.apiUrl}/camera/${id}`, camera);
   }
 
   deleteCamera(id: number): Observable<any> {
-    return this.http.delete<any>(`${this.apiUrl}/cameras/${id}`);
+    return this.http.delete<any>(`${this.apiUrl}/camera/${id}`);
   }
 
   getCameraById(id: number): Observable<Camera> {
@@ -47,8 +47,8 @@ export class CameraService {
     if (start) params = params.set('start', start);
     if (end) params = params.set('end', end);
 
-    return this.http.get<RecordingSegment[]>(`${this.apiUrl}/camera/${id}/recordings`, { 
-      params: params 
+    return this.http.get<RecordingSegment[]>(`${this.apiUrl}/camera/${id}/recordings`, {
+      params: params
     });
   }
 
@@ -57,12 +57,20 @@ export class CameraService {
       .set('start', start)
       .set('duration', duration.toString());
 
-    return this.http.get<{ playbackUrl: string }>(`${this.apiUrl}/camera/${id}/playback-url`, { 
-      params: params 
+    return this.http.get<{ playbackUrl: string }>(`${this.apiUrl}/camera/${id}/playback-url`, {
+      params: params
     });
   }
 
   getApiBaseUrl(): string {
     return this.apiUrl;
+  }
+
+  static formatName(name: string): string {
+    return name
+      .toLowerCase()
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/[^\w_]/g, '');
   }
 }

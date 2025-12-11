@@ -1,0 +1,52 @@
+# Design de Interface de Playback (Gravações)
+
+Este documento define o design visual para a aba de "Histórico de Gravações". O objetivo é transformar a interface atual (funcional) em uma experiência de "Time Travel" profissional, mantendo a simplicidade de implementação.
+
+## Conceito Visual: "Timeline Cinema"
+O foco é o vídeo. A interface ao redor deve ser "invisible" (dark mode profundo) para não distrair.
+
+### 1. Layout Geral
+Manter a estrutura de 2 colunas, mas refinar as proporções:
+*   **Lateral Esquerda (25% - 300px fixo)**: Lista de Segmentos (Playlist).
+*   **Área Principal (75%)**: Player de Vídeo + Timeline Global.
+
+### 2. Componentes
+
+#### A. Seletor de Data (Calendário)
+*   **Atual**: Um input nativo solto.
+*   **Novo Design**: Um componente estilizado no topo da Sidebar.
+    *   Fundo escuro (`#1e293b`).
+    *   Botões de `<` (Dia Anterior) e `>` (Próximo Dia) ao lado da data textual (ex: "10 Dez 2024").
+
+#### B. Lista de Segmentos (Sidebar)
+*   Transformar a lista `<ul>` em uma **"Linha do Tempo Vertical"**.
+*   Cada item da lista:
+    *   **Visual**: Um cartão compacto com borda esquerda colorida (Azul se for gravação contínua, Vermelho se for movimento).
+    *   **Info**: Hora de Início (Grande) -> Duração (Pequeno, cinza).
+    *   **Estado**: Se selecionado, o fundo fica iluminado (`rgba(59, 130, 246, 0.2)`).
+
+#### C. O Player de Vídeo
+*   **Container**: Centralizado na área principal com `aspect-ratio: 16/9`.
+*   **Moldura**: Borda fina (`#334155`) e sombra suave (`box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5)`).
+*   **Overlay**: Quando pausado ou carregando, mostrar ícones grandes e elegantes no centro.
+
+#### D. A Timeline (Slider)
+*   **Atual**: Um `input[type=range]` padrão do navegador.
+*   **Novo Design (CSS Only)**:
+    *   **Trilho (Track)**: Altura de 8px, cor cinza escuro.
+    *   **Progresso**: Cor primária (Azul Neon).
+    *   **Thumb (Bolinha)**: Um retângulo vertical ou círculo branco brilhante.
+    *   **Marcadores**: Se possível, pintar o fundo do trilho nas áreas onde TEM vídeo (usando `background: linear-gradient(...)` gerado dinamicamente é fácil, ou apenas deixar simples por enquanto).
+
+## Detalhes de Implementação (Para Devs)
+> [!NOTE]
+> Não é necessário reescrever a lógica de busca de vídeo. Apenas o CSS e a estrutura HTML mudam.
+
+1.  **Sidebar**: Adicionar classes `glass-panel` e `scroll-smooth`.
+2.  **Timeline**: Usar CSS Custom Properties para estilizar o `input[type=range]`. Não precisamos de bibliotecas de timeline complexas (ex: VisJS) por enquanto.
+3.  **Responsividade**: Em telas menores, a sidebar pode ir para baixo do vídeo.
+
+## Paleta de Cores Específica
+*   **Fundo Player**: `#000000` (Preto absoluto).
+*   **Timeline Active**: `#3b82f6` (Blue 500).
+*   **Timeline Motion**: `#ef4444` (Red 500).
