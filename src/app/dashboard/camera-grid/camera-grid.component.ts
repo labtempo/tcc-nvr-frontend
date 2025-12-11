@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CameraFeedComponent } from '../camera-feed/camera-feed.component';
 import { CameraService } from '../../camera';
 import { Camera } from '../../camera.model';
@@ -53,7 +54,8 @@ import { Camera } from '../../camera.model';
           <app-camera-feed 
             [name]="cam.name" 
             [status]="getStatus(cam)" 
-            [hlsUrl]="cam.visualisation_url_hls || ''">
+            [hlsUrl]="''"
+            [iframeUrl]="getIframeUrl(cam)">
           </app-camera-feed>
         </div>
       </div>
@@ -179,8 +181,9 @@ import { Camera } from '../../camera.model';
 export class CameraGridComponent implements OnInit {
   cameras: Camera[] = [];
   gridSize: number = 2;
+  urlCache: Map<number, SafeResourceUrl> = new Map();
 
-  constructor(private cameraService: CameraService) { }
+  constructor(private cameraService: CameraService, private sanitizer: DomSanitizer) { }
 
   ngOnInit() {
     this.loadCameras();
@@ -188,8 +191,23 @@ export class CameraGridComponent implements OnInit {
 
   loadCameras() {
     this.cameraService.getCameras().subscribe({
-      next: (data) => this.cameras = data,
+      next: (data) => {
+        this.cameras = data;
+        this.updateUrlCache();
+      },
       error: (err) => console.error(err)
+    });
+  }
+
+  updateUrlCache() {
+    this.cameras.forEach(cam => {
+      if (cam.name) {
+        const formattedName = CameraService.formatName(cam.name);
+        const url = `http://localhost:8889/live/${formattedName}/`;
+        if (!this.urlCache.has(cam.id)) {
+          this.urlCache.set(cam.id, this.sanitizer.bypassSecurityTrustResourceUrl(url));
+        }
+      }
     });
   }
 
@@ -200,13 +218,14 @@ export class CameraGridComponent implements OnInit {
   get gridStyle() {
     return {
       'grid-template-columns': `repeat(${this.gridSize}, 1fr)`
-      // Removed fixed rows to allow scrolling
     };
   }
 
   getStatus(cam: Camera): string {
-    return cam.visualisation_url_hls ? 'LIVE' : 'OFFLINE';
+    return (cam.name) ? 'LIVE' : 'OFFLINE';
   }
 
-
+  getIframeUrl(cam: Camera): SafeResourceUrl | null {
+    return this.urlCache.get(cam.id) || null;
+  }
 }

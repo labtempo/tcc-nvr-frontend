@@ -1,5 +1,6 @@
-import { Component, Input, OnInit, OnDestroy, ElementRef, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, OnDestroy, ElementRef, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { SafeResourceUrl } from '@angular/platform-browser';
 import Hls from 'hls.js';
 
 @Component({
@@ -9,23 +10,26 @@ import Hls from 'hls.js';
   template: `
     <div class="camera-card" [class.motion]="variant === 'MOTION'" [class.offline]="status !== 'LIVE'">
       
-      <!-- Video Layer -->
       <div class="video-container">
-        <!-- HLS Video Player -->
-        <video #videoElement *ngIf="status === 'LIVE'" class="feed-video" autoplay muted playsinline></video>
         
-        <!-- Offline State -->
+        <video #videoElement *ngIf="status === 'LIVE' && hlsUrl" class="feed-video" autoplay muted playsinline></video>
+        
+        <iframe *ngIf="status === 'LIVE' && !hlsUrl && iframeUrl" 
+                [src]="iframeUrl"
+                class="feed-iframe"
+                frameborder="0"
+                allowfullscreen>
+        </iframe>
+
         <div *ngIf="status !== 'LIVE'" class="offline-placeholder">
           <i class="bi bi-wifi-off"></i>
           <span class="offline-text">SINAL PERDIDO</span>
         </div>
       </div>
 
-      <!-- Overlay Gradients -->
       <div class="overlay-top"></div>
       <div class="overlay-bottom"></div>
 
-      <!-- Data Layer -->
       <div class="camera-header">
         <span class="camera-name">{{ name }}</span>
         <div class="status-indicator">
@@ -160,6 +164,17 @@ import Hls from 'hls.js';
     .dot.live { background-color: var(--color-success); box-shadow: 0 0 8px var(--color-success); }
     .dot.offline { background-color: var(--color-danger); }
 
+    .feed-iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+      pointer-events: none; /* Let clicks pass through if needed, or remove if interaction is desired */
+      background: #000;
+      position: absolute;
+      top: 0;
+      left: 0;
+    }
+
 
   `]
 })
@@ -169,6 +184,7 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
   @Input() variant: 'NORMAL' | 'MOTION' = 'NORMAL';
   @Input() imageSrc: string = '';
   @Input() hlsUrl: string = '';
+  @Input() iframeUrl: SafeResourceUrl | null = null;
 
   @ViewChild('videoElement') videoElementRef!: ElementRef<HTMLVideoElement>;
   private hls: Hls | null = null;
