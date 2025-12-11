@@ -22,7 +22,7 @@ export class CameraViewComponent implements OnInit {
     private router: Router,
     private cameraService: CameraService,
     private sanitizer: DomSanitizer
-  ) {}
+  ) { }
 
   goBack(): void {
     this.router.navigate(['/cameras']);
@@ -32,9 +32,9 @@ export class CameraViewComponent implements OnInit {
     // Formata o nome para o padrão do backend
     return name
       .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // remove acentos
-      .replace(/\s+/g, '_') // espaços para underline
-      .replace(/[^\w_]/g, ''); // remove caracteres especiais
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+/g, '_')
+      .replace(/[^\w_]/g, '');
   }
 
   ngOnInit(): void {

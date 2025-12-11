@@ -11,10 +11,20 @@ import { CameraPlaybackComponent } from './camera-playback/camera-playback';
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
-  { path: 'cameras', component: CameraListComponent, canActivate: [authGuard] },
-  { path: 'cameras/create', component: CameraCreateComponent, canActivate: [authGuard] },
-  { path: 'cameras/edit/:id', component: CameraEditComponent, canActivate: [authGuard] },
-  { path: 'cameras/view/:id', component: CameraViewComponent, canActivate: [authGuard] },
-  { path: 'cameras/playback/:id', component: CameraPlaybackComponent, canActivate: [authGuard] },
-  { path: '', redirectTo: '/login', pathMatch: 'full' },
+  {
+    path: '',
+    loadComponent: () => import('./layout/dashboard-layout/dashboard-layout.component').then(m => m.DashboardLayoutComponent),
+    canActivate: [authGuard],
+    children: [
+      { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+      { path: 'dashboard', loadComponent: () => import('./dashboard/camera-grid/camera-grid.component').then(m => m.CameraGridComponent) },
+      { path: 'cameras', component: CameraListComponent },
+      { path: 'cameras/create', component: CameraCreateComponent },
+      { path: 'cameras/edit/:id', component: CameraEditComponent },
+      { path: 'cameras/view/:id', component: CameraViewComponent },
+      { path: 'cameras/playback/:id', component: CameraPlaybackComponent },
+
+    ]
+  },
+  { path: '**', redirectTo: '/dashboard' }
 ];
