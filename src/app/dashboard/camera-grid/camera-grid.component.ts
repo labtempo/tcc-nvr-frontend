@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { CameraFeedComponent } from '../camera-feed/camera-feed.component';
 import { CameraService } from '../../camera';
 import { Camera } from '../../camera.model';
+import { SettingsService } from '../../settings/settings.service';
 
 @Component({
   selector: 'app-camera-grid',
@@ -180,16 +181,55 @@ export class CameraGridComponent implements OnInit {
   cameras: Camera[] = [];
   gridSize: number = 2;
 
-  constructor(private cameraService: CameraService) { }
+  constructor(
+    private cameraService: CameraService,
+    private settingsService: SettingsService
+  ) { }
 
   ngOnInit() {
+    this.applySettings();
     this.loadCameras();
+
+    // React to settings changes (like priority updates)
+    this.settingsService.settings$.subscribe(() => {
+      this.applySettings();
+      this.sortCameras();
+    });
+  }
+
+  applySettings() {
+    const settings = this.settingsService.currentSettings;
+
+    // Apply Grid Preference
+    switch (settings.interface.defaultGrid) {
+      case '2x2': this.gridSize = 2; break;
+      case '3x3': this.gridSize = 3; break;
+      case '4x4': this.gridSize = 4; break;
+      default: this.gridSize = 2;
+    }
   }
 
   loadCameras() {
     this.cameraService.getCameras().subscribe({
-      next: (data) => this.cameras = data,
+      next: (data) => {
+        this.cameras = data;
+        this.sortCameras();
+      },
       error: (err) => console.error(err)
+    });
+  }
+
+  sortCameras() {
+    if (!this.cameras) return;
+    this.cameras.sort((a, b) => {
+      const pA = this.settingsService.getCameraPriority(a.id);
+      const pB = this.settingsService.getCameraPriority(b.id);
+
+      // Sort Ascending (1 goes first)
+      if (pA !== pB) return pA - pB;
+
+      // Tie-breaker: Name
+      return a.name.localeCompare(b.name);
     });
   }
 

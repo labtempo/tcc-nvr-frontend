@@ -7,6 +7,7 @@ import { CameraEditComponent } from './camera-edit/camera-edit';
 import { authGuard } from './auth/auth-guard';
 import { CameraViewComponent } from './camera-view/camera-view';
 import { CameraPlaybackComponent } from './camera-playback/camera-playback';
+import { SettingsComponent } from './settings/settings.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
@@ -23,6 +24,7 @@ export const routes: Routes = [
       { path: 'cameras/edit/:id', component: CameraEditComponent },
       { path: 'cameras/view/:id', component: CameraViewComponent },
       { path: 'cameras/playback/:id', component: CameraPlaybackComponent },
+      { path: 'settings', component: SettingsComponent },
 
     ]
   },

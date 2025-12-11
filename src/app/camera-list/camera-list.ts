@@ -71,7 +71,7 @@ import { ToastService } from '../shared/toast/toast.service';
 
 
         <div class="list-item glass-panel" *ngFor="let cam of filteredCameras">
-
+          
           <div class="col-preview">
             <div class="preview-thumb">
                <i class="bi bi-camera-video"></i>

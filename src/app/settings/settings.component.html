@@ -1,0 +1,153 @@
+<div class="settings-page">
+    <div class="settings-container glass-panel">
+
+        <div class="settings-header">
+            <h2 class="page-title">Configurações do Sistema</h2>
+            <p class="page-subtitle">Gerencie as preferências globais do NVR</p>
+        </div>
+
+        <!-- Section: Interface -->
+        <div class="settings-section">
+            <h3 class="section-title"><i class="bi bi-display"></i> Interface de Monitoramento</h3>
+
+            <div class="control-row">
+                <label class="control-label">Grid Padrão ao Iniciar</label>
+                <select class="form-select" [(ngModel)]="settings.interface.defaultGrid">
+                    <option value="2x2">2x2 (4 Câmeras)</option>
+                    <option value="3x3">3x3 (9 Câmeras)</option>
+                    <option value="4x4">4x4 (16 Câmeras)</option>
+                </select>
+            </div>
+
+            <div class="control-row">
+                <div class="label-group">
+                    <label class="control-label">Autoplay Automático</label>
+                    <span class="control-desc">Iniciar streams assim que carregar a dashboard</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" [(ngModel)]="settings.interface.autoplay">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+
+            <div class="control-row favorites-section">
+                <div class="label-group">
+                    <label class="control-label">Câmeras Favoritas</label>
+                    <span class="control-desc">Defina quais câmeras aparecem primeiro no Grid.</span>
+                </div>
+
+                <div class="favorites-summary">
+                    <div class="count-badge">
+                        <i class="bi bi-star-fill"></i>
+                        <span>{{ hiddenFavoritesCount }} selecionadas</span>
+                    </div>
+                    <button class="btn-secondary" (click)="openFavoritesModal()">
+                        Gerenciar
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Section: Storage -->
+        <div class="settings-section">
+            <h3 class="section-title"><i class="bi bi-hdd"></i> Armazenamento e Gravação</h3>
+
+            <div class="control-row">
+                <label class="control-label">Retenção (Dias)</label>
+                <input type="number" class="form-input monospace" [(ngModel)]="retentionDays" style="width: 100px;">
+            </div>
+
+            <div class="control-row">
+                <div class="label-group">
+                    <label class="control-label">Quebra de Gravação (Minutos)</label>
+                    <span class="control-desc">Duração de cada segmento de videoclipe salvo</span>
+                </div>
+                <select class="form-select" [(ngModel)]="recordingSplitMinutes" style="width: 150px;">
+                    <option [ngValue]="1">1 Minuto</option>
+                    <option [ngValue]="5">5 Minutos</option>
+                    <option [ngValue]="10">10 Minutos</option>
+                    <option [ngValue]="15">15 Minutos</option>
+                    <option [ngValue]="30">30 Minutos</option>
+                    <option [ngValue]="60">1 Hora</option>
+                </select>
+            </div>
+
+            <div class="control-row">
+                <div class="label-group">
+                    <label class="control-label">Limpeza Automática</label>
+                    <span class="control-desc">Apagar arquivos antigos automaticamente</span>
+                </div>
+                <label class="switch">
+                    <input type="checkbox" [(ngModel)]="settings.storage.autoCleanup">
+                    <span class="slider round"></span>
+                </label>
+            </div>
+        </div>
+
+        <!-- Section: System -->
+        <div class="settings-section">
+            <h3 class="section-title"><i class="bi bi-cpu"></i> Sistema e Rede</h3>
+
+            <div class="system-info-card">
+                <div class="info-item">
+                    <span class="label">Versão Frontend</span>
+                    <span class="value">v1.1.0-beta</span>
+                </div>
+                <div class="info-item">
+                    <span class="label">Status Backend</span>
+                    <span class="value status-ok">Conectado</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="settings-actions">
+            <button class="btn-ghost" (click)="resetDefaults()">Restaurar Padrão</button>
+            <button class="btn-primary" (click)="saveSettings()">Salvar Alterações</button>
+        </div>
+
+    </div>
+</div>
+
+<!-- Favorites Modal -->
+<div class="modal-backdrop" *ngIf="showFavoritesModal" (click)="closeFavoritesModal()">
+    <div class="modal-content glass-panel" (click)="$event.stopPropagation()">
+
+        <div class="modal-header">
+            <h3>Gerenciar Favoritos</h3>
+            <button class="btn-icon-close" (click)="closeFavoritesModal()">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <div class="modal-search">
+            <i class="bi bi-search"></i>
+            <input type="text" placeholder="Filtrar câmeras..." [(ngModel)]="modalSearchTerm" autofocus>
+        </div>
+
+        <div class="modal-body custom-scrollbar">
+            <div class="camera-row" *ngFor="let cam of filteredModalCameras" (click)="toggleFavorite(cam.id)"
+                [class.selected]="isFavorite(cam.id)">
+
+                <div class="row-info">
+                    <span class="cam-name">{{ cam.name }}</span>
+                    <span class="cam-ip">{{ cam.rtsp_url }}</span>
+                </div>
+
+                <div class="row-action">
+                    <i class="bi" [class.bi-star-fill]="isFavorite(cam.id)" [class.bi-star]="!isFavorite(cam.id)"></i>
+                </div>
+            </div>
+
+            <div class="empty-state-modal" *ngIf="filteredModalCameras.length === 0">
+                Nenhuma câmera encontrada.
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <span class="selection-info">{{ hiddenFavoritesCount }} câmeras favoritas</span>
+            <button class="btn-primary" (click)="closeFavoritesModal()">Concluir</button>
+        </div>
+
+    </div>
+</div>
