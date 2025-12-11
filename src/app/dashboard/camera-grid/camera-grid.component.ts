@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CameraFeedComponent } from '../camera-feed/camera-feed.component';
 import { CameraService } from '../../camera';
@@ -12,7 +13,6 @@ import { SettingsService } from '../../settings/settings.service';
   imports: [CommonModule, CameraFeedComponent],
   template: `
     <div class="page-layout">
-      <!-- Toolbar -->
       <div class="toolbar glass-panel">
          <span class="toolbar-label">LAYOUT:</span>
          <div class="btn-group">
@@ -49,7 +49,6 @@ import { SettingsService } from '../../settings/settings.service';
          </div>
       </div>
 
-      <!-- Grid -->
       <div class="grid-container" [ngStyle]="gridStyle">
         <div class="grid-item" *ngFor="let cam of cameras">
           <app-camera-feed 
@@ -59,6 +58,8 @@ import { SettingsService } from '../../settings/settings.service';
             [iframeUrl]="getIframeUrl(cam)"
             [rawUrl]="getRawUrl(cam)">
           </app-camera-feed>
+          <!-- Explicit Overlay for Clicking -->
+          <div class="click-overlay" (click)="viewCamera(cam)"></div>
         </div>
       </div>
     </div>
@@ -126,7 +127,6 @@ import { SettingsService } from '../../settings/settings.service';
       box-shadow: 0 0 10px var(--color-primary-glow);
     }
 
-    /* CSS Grid Icons */
     .grid-icon {
       width: 20px;
       height: 20px;
@@ -140,7 +140,6 @@ import { SettingsService } from '../../settings/settings.service';
       border-radius: 1px;
     }
 
-    /* Exact Grids */
     .grid-1 { grid-template-columns: 1fr; }
     .grid-2 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
     .grid-3 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
@@ -169,35 +168,53 @@ import { SettingsService } from '../../settings/settings.service';
       position: relative;
       width: 100%;
       padding-top: 56.25%;
+      transition: all 0.3s ease;
+    }
+
+    .grid-item:hover {
+      z-index: 10;
+      transform: scale(1.02);
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      border-color: var(--color-primary);
     }
     
-    .grid-item ::ng-deep app-camera-feed {
+    .grid-item app-camera-feed {
        position: absolute;
        top: 0;
        left: 0;
        width: 100%;
        height: 100%;
     }
+
+    .click-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 20;
+      cursor: pointer;
+      background: transparent;
+    }
   `]
 })
 export class CameraGridComponent implements OnInit {
   cameras: Camera[] = [];
   gridSize: number = 2;
-  // RESTORED: Using SafeResourceUrl as requested in feat/dashboard
   urlCache: Map<number, SafeResourceUrl> = new Map();
   rawUrlCache: Map<number, string> = new Map();
 
   constructor(
+    private router: Router,
+    private sanitizer: DomSanitizer,
     private cameraService: CameraService,
-    private settingsService: SettingsService,
-    private sanitizer: DomSanitizer
+    private settingsService: SettingsService
   ) { }
 
   ngOnInit() {
     this.applySettings();
     this.loadCameras();
 
-    // React to settings changes (like priority updates)
     this.settingsService.settings$.subscribe(() => {
       this.applySettings();
       this.sortCameras();
@@ -207,7 +224,6 @@ export class CameraGridComponent implements OnInit {
   applySettings() {
     const settings = this.settingsService.currentSettings;
 
-    // Apply Grid Preference
     switch (settings.interface.defaultGrid) {
       case '2x2': this.gridSize = 2; break;
       case '3x3': this.gridSize = 3; break;
@@ -229,15 +245,9 @@ export class CameraGridComponent implements OnInit {
 
   updateUrlCache() {
     this.cameras.forEach(cam => {
-      // Prioritize URL from Backend (Mock or Real) if present
-      let url = cam.visualisation_url_hls;
 
-      // Fallback to local WebRTC generator if empty
-      if (!url) {
-        // Use dash formatting for URLs (common standard for keys)
-        const formattedName = cam.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        url = `http://localhost:8889/live/${formattedName}/`;
-      }
+      const formattedName = CameraService.formatName(cam.name);
+      const url = `http://localhost:8889/live/${formattedName}/`;
 
       if (!this.urlCache.has(cam.id)) {
         this.urlCache.set(cam.id, this.sanitizer.bypassSecurityTrustResourceUrl(url));
@@ -252,12 +262,22 @@ export class CameraGridComponent implements OnInit {
       const pA = this.settingsService.getCameraPriority(a.id);
       const pB = this.settingsService.getCameraPriority(b.id);
 
-      // Sort Ascending (1 goes first)
       if (pA !== pB) return pA - pB;
 
-      // Tie-breaker: Name
       return a.name.localeCompare(b.name);
     });
+  }
+
+  viewCamera(cam: Camera) {
+    this.router.navigate(['/cameras/view', cam.id]);
+  }
+
+  getIframeUrl(cam: Camera): SafeResourceUrl | null {
+    return this.urlCache.get(cam.id) || null;
+  }
+
+  getRawUrl(cam: Camera): string {
+    return this.rawUrlCache.get(cam.id) || '';
   }
 
   setGrid(size: number) {
@@ -274,11 +294,5 @@ export class CameraGridComponent implements OnInit {
     return (cam.name) ? 'LIVE' : 'OFFLINE';
   }
 
-  getIframeUrl(cam: Camera): SafeResourceUrl | null {
-    return this.urlCache.get(cam.id) || null;
-  }
 
-  getRawUrl(cam: Camera): string {
-    return this.rawUrlCache.get(cam.id) || '';
-  }
 }
