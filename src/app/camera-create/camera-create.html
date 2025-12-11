@@ -1,20 +1,45 @@
+<div class="form-page">
+  <div class="form-container glass-panel">
+    <div class="form-header">
+      <h2 class="form-title">Nova Câmera</h2>
+      <p class="form-subtitle">Adicione uma nova fonte de vídeo ao sistema</p>
+    </div>
 
-<div class="container mt-4">
-  <h2>Criar Nova Câmera</h2>
-  <form (ngSubmit)="onCreateCamera()">
-    <div class="form-group">
-      <label for="name">Nome</label>
-      <input id="name" type="text" class="form-control" [(ngModel)]="camera.name" name="name" placeholder="Nome" required>
-    </div>
-    <div class="form-group">
-      <label for="rtsp_url">URL RTSP</label>
-      <input id="rtsp_url" type="text" class="form-control" [(ngModel)]="camera.rtsp_url" name="rtsp_url" placeholder="URL RTSP" required>
-    </div>
-    <div class="form-group form-check">
-      <input type="checkbox" class="form-check-input" id="is_recording" [(ngModel)]="camera.is_recording" name="is_recording">
-      <label class="form-check-label" for="is_recording">Está gravando?</label>
-    </div>
-    <button type="submit" class="btn btn-primary">Salvar</button>
-    <button type="button" class="btn btn-secondary" [routerLink]="['/cameras']">Cancelar</button>
-  </form>
+    <form (ngSubmit)="onCreateCamera()">
+
+      <!-- Nome -->
+      <div class="form-group">
+        <label class="form-label" for="name">Nome da Câmera</label>
+        <input id="name" type="text" class="form-input" [(ngModel)]="camera.name" name="name"
+          placeholder="Ex: Câmera Portaria" required autocomplete="off">
+      </div>
+
+      <!-- RTSP URL -->
+      <div class="form-group">
+        <label class="form-label" for="rtsp_url">URL RTSP</label>
+        <input id="rtsp_url" type="text" class="form-input monospace" [(ngModel)]="camera.rtsp_url" name="rtsp_url"
+          placeholder="rtsp://admin:pass@192.168.1.10:554/stream" required autocomplete="off">
+      </div>
+
+      <!-- Toggle Switch -->
+      <div class="form-group toggle-group">
+        <label class="toggle-label" for="is_recording">
+          <span class="label-text">Gravação Automática</span>
+          <span class="label-desc">Iniciar gravação ao criar</span>
+        </label>
+
+        <label class="switch">
+          <input type="checkbox" id="is_recording" [(ngModel)]="camera.is_recording" name="is_recording">
+          <span class="slider round"></span>
+        </label>
+      </div>
+
+      <!-- Actions -->
+      <div class="form-actions">
+        <button type="button" class="btn-ghost" [routerLink]="['/cameras']">Cancelar</button>
+        <button type="submit" class="btn-primary">Salvar Câmera</button>
+      </div>
+
+    </form>
+  </div>
 </div>

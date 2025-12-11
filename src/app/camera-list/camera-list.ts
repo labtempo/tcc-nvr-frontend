@@ -4,6 +4,8 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CameraService } from '../camera';
 import { Camera } from '../camera.model';
+import { ConfirmDialogService } from '../shared/confirm-dialog/confirm-dialog.service';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
   selector: 'app-camera-list',
@@ -442,7 +444,11 @@ export class CameraListComponent implements OnInit {
   searchTerm: string = '';
   filterStatus: 'ALL' | 'RECORDING' | 'STOPPED' = 'ALL';
 
-  constructor(private cameraService: CameraService) { }
+  constructor(
+    private cameraService: CameraService,
+    private confirmService: ConfirmDialogService,
+    private toastService: ToastService
+  ) { }
 
   ngOnInit(): void {
     this.loadCameras();
@@ -486,9 +492,20 @@ export class CameraListComponent implements OnInit {
     }
   }
 
-  deleteCamera(id: number) {
-    if (confirm('Tem certeza que deseja remover esta câmera?')) {
-      this.cameraService.deleteCamera(id).subscribe(() => this.loadCameras());
+  async deleteCamera(id: number) {
+    const confirmed = await this.confirmService.confirm(
+      'Remover Câmera',
+      'Tem certeza que deseja remover esta câmera? Esta ação não pode ser desfeita.'
+    );
+
+    if (confirmed) {
+      this.cameraService.deleteCamera(id).subscribe({
+        next: () => {
+          this.toastService.success('Câmera removida com sucesso');
+          this.loadCameras();
+        },
+        error: () => this.toastService.error('Erro ao remover câmera')
+      });
     }
   }
 }

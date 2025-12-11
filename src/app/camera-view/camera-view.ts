@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { CameraService } from '../camera';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
   selector: 'app-camera-view',
@@ -21,7 +22,8 @@ export class CameraViewComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private cameraService: CameraService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private toastService: ToastService
   ) { }
 
   goBack(): void {
@@ -48,13 +50,13 @@ export class CameraViewComponent implements OnInit {
             const url = `http://localhost:8889/live/${formattedName}/`;
             this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
           } else {
-            alert('Câmera não encontrada.');
+            this.toastService.error('Câmera não encontrada.');
             this.goBack();
           }
         },
         (error: any) => {
           console.error('Erro ao buscar câmera:', error);
-          alert('Erro ao buscar câmera.');
+          this.toastService.error('Erro ao buscar câmera.');
           this.goBack();
         }
       );
