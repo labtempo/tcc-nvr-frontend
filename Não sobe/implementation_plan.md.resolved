@@ -1,0 +1,46 @@
+# Implementation Plan - Visual Overhaul
+
+This plan outlines the steps to apply the "Cyber Slate" design theme, allowing for a premium feel without altering backend logic.
+
+## User Review Required
+> [!IMPORTANT]
+> **No new packages**: We will stick to `Bootstrap Icons` (already present) but style them to look more modern.
+> **Assumptions**: The [Sidebar](file:///e:/IC-UFF/tcc-nvr-frontend/src/app/layout/sidebar/sidebar.component.ts#5-94), [Topbar](file:///e:/IC-UFF/tcc-nvr-frontend/src/app/layout/topbar/topbar.component.ts#4-137), and [CameraList](file:///e:/IC-UFF/tcc-nvr-frontend/src/app/camera-list/camera-list.ts#7-49) are the primary targets for now.
+
+## Proposed Changes
+
+### Global Styles
+#### [MODIFY] [styles.css](file:///e:/IC-UFF/tcc-nvr-frontend/src/styles.css)
+- Replace color variables with the **Slate Palette** (bg-dark: #0f172a, bg-surface: #1e293b).
+- Add utility classes for `glass-panel` (backdrop-filter) and `glow-text`.
+- Update scrollbar styling to be slimmer and darker.
+
+### Layout Components
+#### [MODIFY] [sidebar.component.ts](file:///e:/IC-UFF/tcc-nvr-frontend/src/app/layout/sidebar/sidebar.component.ts)
+- Update CSS to use `glass-panel`.
+- Improve navigation items spacing and hover effects (active state with glow).
+- Change logo area to look more branded.
+
+#### [MODIFY] [topbar.component.ts](file:///e:/IC-UFF/tcc-nvr-frontend/src/app/layout/topbar/topbar.component.ts)
+- Apply glassmorphism.
+- Style the "Panic" button to be a "Pulse" button.
+- Clean up the clock/date typography (JetBrains Mono for numbers).
+
+### Camera Management
+#### [MODIFY] [camera-list.ts / html / css](file:///e:/IC-UFF/tcc-nvr-frontend/src/app/camera-list/camera-list.ts)
+- **Major Change**: Convert from `<ul>` list to a **CSS Grid of Cards**.
+- Each card will show:
+    - Placeholder Image / Icon
+    - Camera Name (Bold)
+    - IP/URL (Truncated, Monospace)
+    - Status Indicator (Green/Red dot)
+    - Action Buttons Row (Icons only, tooltips on hover)
+
+## Verification Plan
+
+### Manual Verification
+- **Visual Check**: Run the app and verify:
+    - Dark blue/slate theme is applied globally.
+    - Sidebar/Topbar have the "frosted glass" effect.
+    - Camera List appears as a responsive grid of cards.
+    - Hover states feel smooth (transitions).
