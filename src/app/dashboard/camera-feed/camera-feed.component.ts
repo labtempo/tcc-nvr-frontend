@@ -263,7 +263,7 @@ import Hls from 'hls.js';
       width: 100%;
       height: 100%;
       border: none;
-      pointer-events: none; 
+      pointer-events: auto; /* Allow interaction */
       /* Transparent so placeholder shows while loading (if possible) */
       background: transparent; 
       position: absolute;
@@ -314,35 +314,11 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
 
     // If we have a raw URL to check (for Iframe scenarios)
     if (this.rawUrl && !this.hlsUrl) {
-
-      // SKIP CHECK for YouTube/External Embeds that block CORS
-      // If it's a known embed domain, assume it's working to avoid false negatives due to CORS
-      if (this.rawUrl.includes('youtube.com') || this.rawUrl.includes('youtu.be') || this.rawUrl.includes('embed')) {
-        this.isLoading = true; // Let iframe onload handle it
-        this.hasError = false;
-        return;
-      }
-
-      // Perform a HEAD request to verify if stream endpoint is reachable
-      // We use text/plain to avoid parsing potentially invalid JSON from a stream server
-      this.http.get(this.rawUrl, { responseType: 'text' }).subscribe({
-        next: () => {
-          this.hasError = false;
-          this.isLoading = false;
-        },
-        error: (err) => {
-          // If 404, definitively error. 
-          // If status is 0 (CORS Error), it might be a valid stream that just doesn't header correctly.
-          // For safety in this "Cyber" mode, we treat 0 as OK if it's not a clear 4xx/5xx failure
-          if (err.status === 0 || err.status === 200) {
-            this.hasError = false;
-          } else {
-            console.warn(`Stream verification failed for ${this.name}`, err);
-            this.hasError = true;
-          }
-          this.isLoading = false;
-        }
-      });
+      // FORCE SUCCESS: Bypass strict checking for iframes to ensure they appear.
+      // The iframe itself will handle loading/errors visually.
+      this.isLoading = false;
+      this.hasError = false;
+      return;
     } else {
       // If HLS or no raw URL provided, just assume OK until error
       this.isLoading = false;

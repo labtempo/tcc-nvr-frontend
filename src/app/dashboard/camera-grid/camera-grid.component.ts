@@ -13,7 +13,6 @@ import { SettingsService } from '../../settings/settings.service';
   imports: [CommonModule, CameraFeedComponent],
   template: `
     <div class="page-layout">
-      <!-- Toolbar -->
       <div class="toolbar glass-panel">
          <span class="toolbar-label">LAYOUT:</span>
          <div class="btn-group">
@@ -50,7 +49,6 @@ import { SettingsService } from '../../settings/settings.service';
          </div>
       </div>
 
-      <!-- Grid -->
       <div class="grid-container" [ngStyle]="gridStyle">
         <div class="grid-item" *ngFor="let cam of cameras">
           <app-camera-feed 
@@ -129,7 +127,6 @@ import { SettingsService } from '../../settings/settings.service';
       box-shadow: 0 0 10px var(--color-primary-glow);
     }
 
-    /* CSS Grid Icons */
     .grid-icon {
       width: 20px;
       height: 20px;
@@ -143,7 +140,6 @@ import { SettingsService } from '../../settings/settings.service';
       border-radius: 1px;
     }
 
-    /* Exact Grids */
     .grid-1 { grid-template-columns: 1fr; }
     .grid-2 { grid-template-columns: repeat(2, 1fr); grid-template-rows: repeat(2, 1fr); }
     .grid-3 { grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(3, 1fr); }
@@ -196,7 +192,6 @@ import { SettingsService } from '../../settings/settings.service';
       left: 0;
       width: 100%;
       height: 100%;
-      /* High z-index to ensure it sits on top of everything inside the item */
       z-index: 20;
       cursor: pointer;
       background: transparent;
@@ -206,7 +201,6 @@ import { SettingsService } from '../../settings/settings.service';
 export class CameraGridComponent implements OnInit {
   cameras: Camera[] = [];
   gridSize: number = 2;
-  // RESTORED: Using SafeResourceUrl as requested in feat/dashboard
   urlCache: Map<number, SafeResourceUrl> = new Map();
   rawUrlCache: Map<number, string> = new Map();
 
@@ -221,7 +215,6 @@ export class CameraGridComponent implements OnInit {
     this.applySettings();
     this.loadCameras();
 
-    // React to settings changes (like priority updates)
     this.settingsService.settings$.subscribe(() => {
       this.applySettings();
       this.sortCameras();
@@ -231,7 +224,6 @@ export class CameraGridComponent implements OnInit {
   applySettings() {
     const settings = this.settingsService.currentSettings;
 
-    // Apply Grid Preference
     switch (settings.interface.defaultGrid) {
       case '2x2': this.gridSize = 2; break;
       case '3x3': this.gridSize = 3; break;
@@ -253,15 +245,9 @@ export class CameraGridComponent implements OnInit {
 
   updateUrlCache() {
     this.cameras.forEach(cam => {
-      // Prioritize URL from Backend (Mock or Real) if present
-      let url = cam.visualisation_url_hls;
 
-      // Fallback to local WebRTC generator if empty
-      if (!url) {
-        // Use dash formatting for URLs (common standard for keys)
-        const formattedName = cam.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        url = `http://localhost:8889/live/${formattedName}/`;
-      }
+      const formattedName = CameraService.formatName(cam.name);
+      const url = `http://localhost:8889/live/${formattedName}/`;
 
       if (!this.urlCache.has(cam.id)) {
         this.urlCache.set(cam.id, this.sanitizer.bypassSecurityTrustResourceUrl(url));
@@ -276,10 +262,8 @@ export class CameraGridComponent implements OnInit {
       const pA = this.settingsService.getCameraPriority(a.id);
       const pB = this.settingsService.getCameraPriority(b.id);
 
-      // Sort Ascending (1 goes first)
       if (pA !== pB) return pA - pB;
 
-      // Tie-breaker: Name
       return a.name.localeCompare(b.name);
     });
   }
