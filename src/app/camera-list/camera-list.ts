@@ -261,13 +261,20 @@ import { Camera } from '../camera.model';
     .list-item {
       display: flex;
       align-items: center;
-      padding: 0.75rem 1rem; /* Compact padding */
-      border-radius: 8px; /* Slightly tighter radius */
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      background: rgba(30, 41, 59, 0.4); /* More transparent list items */
+      padding: 0.75rem 1rem;
+      border-radius: 12px; /* More rounded */
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      
+      /* New "Shaded" Look */
+      background: linear-gradient(145deg, rgba(30, 41, 59, 0.6) 0%, rgba(15, 23, 42, 0.8) 100%);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 
+                  0 2px 4px -1px rgba(0, 0, 0, 0.1),
+                  inset 0 1px 0 rgba(255,255,255,0.05); /* Top highlight */
+      
       color: var(--text-primary);
-      height: 60px; /* Fixed compact height */
+      height: 64px; /* Slightly taller for elegance */
+      margin-bottom: 0.5rem; /* Separate items */
     }
 
 
@@ -293,10 +300,12 @@ import { Camera } from '../camera.model';
     
 
     .list-item:hover {
-      background: rgba(30, 41, 59, 0.9);
-      border-color: var(--color-primary);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      background: linear-gradient(145deg, rgba(40, 55, 75, 0.8) 0%, rgba(20, 30, 50, 0.9) 100%);
+      border-color: rgba(59, 130, 246, 0.4); /* Blue hint */
+      transform: translateY(-2px) scale(1.005); /* Slight scale */
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 
+                  0 4px 6px -2px rgba(0, 0, 0, 0.2),
+                  0 0 15px rgba(59, 130, 246, 0.1); /* Glow */
     }
     
     /* Apply specific styles ONLY inside list-item */
@@ -368,14 +377,50 @@ import { Camera } from '../camera.model';
     .status-badge.offline .dot { background-color: var(--color-danger); }
 
     .btn-icon {
-      opacity: 0.7;
-      transition: all 0.2s;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+      margin: 0 4px;
     }
-    .btn-icon:hover { opacity: 1; transform: scale(1.1); }
+
+    /* Hover States - Color Coded */
+    .btn-icon:hover {
+      transform: translateY(-2px);
+      color: white;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+
+    /* View (Default/Blue) */
+    .btn-icon[title="Ver ao Vivo"]:hover {
+       background: rgba(59, 130, 246, 0.6);
+       border-color: #3b82f6;
+    }
+
+    /* Playback (Purple) */
+    .btn-icon[title="Gravações"]:hover {
+       background: rgba(168, 85, 247, 0.6);
+       border-color: #a855f7;
+    }
+
+    /* Edit (Amber) */
+    .btn-icon[title="Editar"]:hover {
+       background: rgba(245, 158, 11, 0.6);
+       border-color: #f59e0b;
+    }
     
+    /* Delete (Red) */
     .btn-icon.danger:hover {
-      color: var(--color-danger);
-      background-color: rgba(239, 68, 68, 0.1);
+      background: rgba(239, 68, 68, 0.6);
+      border-color: #ef4444;
+      color: white;
     }
     
     .empty-state {
