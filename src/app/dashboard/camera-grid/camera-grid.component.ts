@@ -4,6 +4,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CameraFeedComponent } from '../camera-feed/camera-feed.component';
 import { CameraService } from '../../camera';
 import { Camera } from '../../camera.model';
+import { SettingsService } from '../../settings/settings.service';
 
 @Component({
   selector: 'app-camera-grid',
@@ -55,7 +56,8 @@ import { Camera } from '../../camera.model';
             [name]="cam.name" 
             [status]="getStatus(cam)" 
             [hlsUrl]="''"
-            [iframeUrl]="getIframeUrl(cam)">
+            [iframeUrl]="getIframeUrl(cam)"
+            [rawUrl]="getRawUrl(cam)">
           </app-camera-feed>
         </div>
       </div>
@@ -181,19 +183,45 @@ import { Camera } from '../../camera.model';
 export class CameraGridComponent implements OnInit {
   cameras: Camera[] = [];
   gridSize: number = 2;
+  // RESTORED: Using SafeResourceUrl as requested in feat/dashboard
   urlCache: Map<number, SafeResourceUrl> = new Map();
+  rawUrlCache: Map<number, string> = new Map();
 
-  constructor(private cameraService: CameraService, private sanitizer: DomSanitizer) { }
+  constructor(
+    private cameraService: CameraService,
+    private settingsService: SettingsService,
+    private sanitizer: DomSanitizer
+  ) { }
 
   ngOnInit() {
+    this.applySettings();
     this.loadCameras();
+
+    // React to settings changes (like priority updates)
+    this.settingsService.settings$.subscribe(() => {
+      this.applySettings();
+      this.sortCameras();
+    });
+  }
+
+  applySettings() {
+    const settings = this.settingsService.currentSettings;
+
+    // Apply Grid Preference
+    switch (settings.interface.defaultGrid) {
+      case '2x2': this.gridSize = 2; break;
+      case '3x3': this.gridSize = 3; break;
+      case '4x4': this.gridSize = 4; break;
+      default: this.gridSize = 2;
+    }
   }
 
   loadCameras() {
     this.cameraService.getCameras().subscribe({
       next: (data) => {
         this.cameras = data;
-        this.updateUrlCache();
+        this.updateUrlCache(); // Logic from feat/dashboard
+        this.sortCameras();    // Logic from feat/settings-page
       },
       error: (err) => console.error(err)
     });
@@ -201,13 +229,34 @@ export class CameraGridComponent implements OnInit {
 
   updateUrlCache() {
     this.cameras.forEach(cam => {
-      if (cam.name) {
-        const formattedName = CameraService.formatName(cam.name);
-        const url = `http://localhost:8889/live/${formattedName}/`;
-        if (!this.urlCache.has(cam.id)) {
-          this.urlCache.set(cam.id, this.sanitizer.bypassSecurityTrustResourceUrl(url));
-        }
+      // Prioritize URL from Backend (Mock or Real) if present
+      let url = cam.visualisation_url_hls;
+
+      // Fallback to local WebRTC generator if empty
+      if (!url) {
+        // Use dash formatting for URLs (common standard for keys)
+        const formattedName = cam.name.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        url = `http://localhost:8889/live/${formattedName}/`;
       }
+
+      if (!this.urlCache.has(cam.id)) {
+        this.urlCache.set(cam.id, this.sanitizer.bypassSecurityTrustResourceUrl(url));
+        this.rawUrlCache.set(cam.id, url);
+      }
+    });
+  }
+
+  sortCameras() {
+    if (!this.cameras) return;
+    this.cameras.sort((a, b) => {
+      const pA = this.settingsService.getCameraPriority(a.id);
+      const pB = this.settingsService.getCameraPriority(b.id);
+
+      // Sort Ascending (1 goes first)
+      if (pA !== pB) return pA - pB;
+
+      // Tie-breaker: Name
+      return a.name.localeCompare(b.name);
     });
   }
 
@@ -227,5 +276,9 @@ export class CameraGridComponent implements OnInit {
 
   getIframeUrl(cam: Camera): SafeResourceUrl | null {
     return this.urlCache.get(cam.id) || null;
+  }
+
+  getRawUrl(cam: Camera): string {
+    return this.rawUrlCache.get(cam.id) || '';
   }
 }

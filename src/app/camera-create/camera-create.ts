@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { CameraService } from '../camera';
 import { Camera } from '../camera.model';
+import { ToastService } from '../shared/toast/toast.service';
 
 @Component({
   selector: 'app-camera-create',
@@ -21,17 +22,21 @@ export class CameraCreateComponent {
     is_recording: false
   };
 
-  constructor(private cameraService: CameraService, private router: Router) {}
-  
+  constructor(
+    private cameraService: CameraService,
+    private router: Router,
+    private toastService: ToastService
+  ) { }
+
   onCreateCamera(): void {
     this.cameraService.createCamera(this.camera).subscribe(
       () => {
-        alert('Câmera criada com sucesso!');
+        this.toastService.success('Câmera criada com sucesso!');
         this.router.navigate(['/cameras']);
       },
       error => {
         console.error('Erro ao criar câmera:', error);
-        alert('Erro ao criar câmera. Verifique os dados.');
+        this.toastService.error('Erro ao criar câmera. Verifique os dados.');
       }
     );
   }

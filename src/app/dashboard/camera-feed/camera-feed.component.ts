@@ -1,6 +1,7 @@
 import { Component, Input, OnInit, OnDestroy, ElementRef, ViewChild, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SafeResourceUrl } from '@angular/platform-browser';
+import { HttpClient } from '@angular/common/http';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import Hls from 'hls.js';
 
 @Component({
@@ -8,23 +9,43 @@ import Hls from 'hls.js';
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="camera-card" [class.motion]="variant === 'MOTION'" [class.offline]="status !== 'LIVE'">
+    <div class="camera-card" [class.motion]="variant === 'MOTION'" [class.offline]="isOfflineOrError()">
       
       <div class="video-container">
         
-        <video #videoElement *ngIf="status === 'LIVE' && hlsUrl" class="feed-video" autoplay muted playsinline></video>
-        
-        <iframe *ngIf="status === 'LIVE' && !hlsUrl && iframeUrl" 
-                [src]="iframeUrl"
-                class="feed-iframe"
-                frameborder="0"
-                allowfullscreen>
-        </iframe>
+        <!-- Only show video/iframe if active and NO error -->
+        <ng-container *ngIf="!isOfflineOrError()">
+            <!-- Background to hide loading flash -->
+            <div class="placeholder-icon">
+              <i class="bi bi-camera-video"></i>
+            </div>
 
-        <div *ngIf="status !== 'LIVE'" class="offline-placeholder">
-          <i class="bi bi-wifi-off"></i>
+            <video #videoElement *ngIf="hlsUrl" class="feed-video" autoplay muted playsinline></video>
+            
+            <iframe *ngIf="!hlsUrl && iframeUrl" 
+                    [src]="iframeUrl"
+                    class="feed-iframe"
+                    frameborder="0"
+                    allowfullscreen
+                    (load)="onIframeLoad()">
+            </iframe>
+        </ng-container>
+
+        <!-- Cyberpunk/Pro Offline Placeholder -->
+        <div *ngIf="isOfflineOrError()" class="offline-placeholder">
+          <div class="scan-line"></div>
+          <div class="icon-wrapper">
+             <i class="bi bi-wifi-off"></i>
+          </div>
           <span class="offline-text">SINAL PERDIDO</span>
+          <span class="offline-subtext">VERIFIQUE A CONEXÃO</span>
         </div>
+        
+        <!-- Loading State -->
+        <div *ngIf="isLoading && !isOfflineOrError()" class="loading-overlay">
+            <div class="spinner-border text-primary" role="status"></div>
+        </div>
+
       </div>
 
       <div class="overlay-top"></div>
@@ -33,12 +54,10 @@ import Hls from 'hls.js';
       <div class="camera-header">
         <span class="camera-name">{{ name }}</span>
         <div class="status-indicator">
-          <span class="dot" [class.live]="status === 'LIVE'" [class.offline]="status !== 'LIVE'"></span>
-          <span class="status-text">{{ status }}</span>
+          <span class="dot" [class.live]="!isOfflineOrError()" [class.offline]="isOfflineOrError()"></span>
+          <span class="status-text">{{ isOfflineOrError() ? 'OFFLINE' : 'LIVE' }}</span>
         </div>
       </div>
-
-
     </div>
   `,
   styles: [`
@@ -69,34 +88,110 @@ import Hls from 'hls.js';
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #000;
+      background-color: #1e293b; /* Dark Slate */
       width: 100%;
       height: 100%;
+      /* Placeholder Pattern */
+      background-image: 
+        radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 70%);
+    }
+
+    /* Icon placeholder using pseudo-element */
+    .video-container::before {
+      content: '\\F234'; /* bi-camera-video in Bootstrap Icons usually, or similar. */
+      /* Actually, let's use a class or distinct element for reliability since font codes vary */
+      /* Falling back to simple background styling first, I'll add an icon element in HTML instead */
+    }
+
+    /* Icon placeholder using pseudo-element removal */
+    
+    .placeholder-icon {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 3rem;
+      color: rgba(255, 255, 255, 0.05);
+      z-index: 0;
     }
 
     .feed-video {
       width: 100%;
       height: 100%;
       object-fit: cover;
+      position: relative;
+      z-index: 1; /* Sit above placeholder */
     }
 
     .offline-placeholder {
+      position: absolute;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: #0f172a; /* Slate 900 */
       display: flex;
       flex-direction: column;
       align-items: center;
-      gap: 1rem;
-      color: var(--text-secondary);
-      opacity: 0.5;
+      justify-content: center;
+      color: #64748b;
+      overflow: hidden;
+      z-index: 20;
     }
 
-    .offline-placeholder i {
-      font-size: 3rem;
+    .icon-wrapper {
+        font-size: 3.5rem;
+        margin-bottom: 1rem;
+        color: #ef4444; /* Red for alert */
+        opacity: 0.8;
+        animation: pulse 2s infinite;
     }
 
-    .offline-placeholder .offline-text {
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
-      letter-spacing: 1px;
+    .offline-text {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1.1rem;
+      font-weight: 700;
+      letter-spacing: 2px;
+      color: #e2e8f0;
+      text-transform: uppercase;
+      text-shadow: 0 0 10px rgba(226, 232, 240, 0.1);
+    }
+    
+    .offline-subtext {
+        font-size: 0.75rem;
+        color: #475569;
+        margin-top: 0.5rem;
+        letter-spacing: 1px;
+    }
+
+    /* Scanline Effect */
+    .scan-line {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.05);
+      animation: scan 4s linear infinite;
+      box-shadow: 0 0 15px rgba(255, 255, 255, 0.1);
+    }
+
+    .loading-overlay {
+        position: absolute;
+        top:0; left:0; width:100%; height:100%;
+        background: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 10;
+    }
+
+    @keyframes scan {
+      0% { top: -10%; }
+      100% { top: 110%; }
+    }
+    
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 0.8; }
+        50% { transform: scale(1.05); opacity: 1; }
+        100% { transform: scale(1); opacity: 0.8; }
     }
 
     .overlay-top {
@@ -168,11 +263,13 @@ import Hls from 'hls.js';
       width: 100%;
       height: 100%;
       border: none;
-      pointer-events: none; /* Let clicks pass through if needed, or remove if interaction is desired */
-      background: #000;
+      pointer-events: none; 
+      /* Transparent so placeholder shows while loading (if possible) */
+      background: transparent; 
       position: absolute;
       top: 0;
       left: 0;
+      z-index: 1;
     }
 
 
@@ -185,11 +282,81 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
   @Input() imageSrc: string = '';
   @Input() hlsUrl: string = '';
   @Input() iframeUrl: SafeResourceUrl | null = null;
+  @Input() rawUrl: string = ''; // New input for checking availability
 
   @ViewChild('videoElement') videoElementRef!: ElementRef<HTMLVideoElement>;
   private hls: Hls | null = null;
 
+  hasError: boolean = false;
+  isLoading: boolean = true;
+  private checkInterval: any;
+
+  constructor(private http: HttpClient) { }
+
   ngOnInit() {
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['status'] || changes['rawUrl'] || changes['iframeUrl']) {
+      this.checkStreamState();
+    }
+  }
+
+  checkStreamState() {
+    this.isLoading = true;
+    this.hasError = false;
+
+    // Status check
+    if (this.status !== 'LIVE') {
+      this.isLoading = false;
+      return;
+    }
+
+    // If we have a raw URL to check (for Iframe scenarios)
+    if (this.rawUrl && !this.hlsUrl) {
+
+      // SKIP CHECK for YouTube/External Embeds that block CORS
+      // If it's a known embed domain, assume it's working to avoid false negatives due to CORS
+      if (this.rawUrl.includes('youtube.com') || this.rawUrl.includes('youtu.be') || this.rawUrl.includes('embed')) {
+        this.isLoading = true; // Let iframe onload handle it
+        this.hasError = false;
+        return;
+      }
+
+      // Perform a HEAD request to verify if stream endpoint is reachable
+      // We use text/plain to avoid parsing potentially invalid JSON from a stream server
+      this.http.get(this.rawUrl, { responseType: 'text' }).subscribe({
+        next: () => {
+          this.hasError = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          // If 404, definitively error. 
+          // If status is 0 (CORS Error), it might be a valid stream that just doesn't header correctly.
+          // For safety in this "Cyber" mode, we treat 0 as OK if it's not a clear 4xx/5xx failure
+          if (err.status === 0 || err.status === 200) {
+            this.hasError = false;
+          } else {
+            console.warn(`Stream verification failed for ${this.name}`, err);
+            this.hasError = true;
+          }
+          this.isLoading = false;
+        }
+      });
+    } else {
+      // If HLS or no raw URL provided, just assume OK until error
+      this.isLoading = false;
+    }
+  }
+
+  isOfflineOrError(): boolean {
+    return this.status !== 'LIVE' || this.hasError;
+  }
+
+  onIframeLoad() {
+    // Iframe loaded (status 200 or 404, we can't tell easily here, 
+    // but the http check above should have caught the 404)
+    this.isLoading = false;
   }
 
   ngAfterViewInit() {
