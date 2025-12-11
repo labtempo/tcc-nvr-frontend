@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { CameraFeedComponent } from '../camera-feed/camera-feed.component';
 import { CameraService } from '../../camera';
 import { Camera } from '../../camera.model';
@@ -56,6 +57,8 @@ import { SettingsService } from '../../settings/settings.service';
             [status]="getStatus(cam)" 
             [hlsUrl]="cam.visualisation_url_hls || ''">
           </app-camera-feed>
+          <!-- Explicit Overlay for Clicking -->
+          <div class="click-overlay" (click)="viewCamera(cam)"></div>
         </div>
       </div>
     </div>
@@ -166,14 +169,34 @@ import { SettingsService } from '../../settings/settings.service';
       position: relative;
       width: 100%;
       padding-top: 56.25%;
+      transition: all 0.3s ease;
+    }
+
+    .grid-item:hover {
+      z-index: 10;
+      transform: scale(1.02);
+      box-shadow: 0 0 20px rgba(0,0,0,0.7);
+      border-color: var(--color-primary);
     }
     
-    .grid-item ::ng-deep app-camera-feed {
+    .grid-item app-camera-feed {
        position: absolute;
        top: 0;
        left: 0;
        width: 100%;
        height: 100%;
+    }
+
+    .click-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      /* High z-index to ensure it sits on top of everything inside the item */
+      z-index: 20;
+      cursor: pointer;
+      background: transparent;
     }
   `]
 })
@@ -183,7 +206,8 @@ export class CameraGridComponent implements OnInit {
 
   constructor(
     private cameraService: CameraService,
-    private settingsService: SettingsService
+    private settingsService: SettingsService,
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -248,5 +272,7 @@ export class CameraGridComponent implements OnInit {
     return cam.visualisation_url_hls ? 'LIVE' : 'OFFLINE';
   }
 
-
+  viewCamera(cam: Camera) {
+    this.router.navigate(['/cameras/view', cam.id]);
+  }
 }

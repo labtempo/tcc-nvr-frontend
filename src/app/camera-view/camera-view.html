@@ -1,23 +1,36 @@
+<div class="view-wrapper">
+  <div class="glass-panel camera-card">
 
-<div class="container mt-4">
-  <div *ngIf="!camera" class="text-center">
-    <p>Carregando câmera...</p>
-  </div>
+    <!-- Header -->
+    <div class="card-header">
+      <div class="header-content">
+        <h2 *ngIf="camera">{{ camera.name }}</h2>
+        <h2 *ngIf="!camera" class="text-muted">Carregando...</h2>
+      </div>
 
-  <div *ngIf="camera">
-    <h2 class="mb-3">Assistindo: {{ camera.name }}</h2>
-    <div class="video-container bg-dark">
-      <iframe *ngIf="videoUrl" 
-              [src]="videoUrl" 
-              width="100%" 
-              height="480" 
-              frameborder="0" 
-              allowfullscreen>
-      </iframe>
-      <div *ngIf="!videoUrl" class="video-error text-white d-flex align-items-center justify-content-center">
-        <p>Não foi possível carregar o stream de vídeo.</p>
+      <button class="btn btn-icon" (click)="goBack()" title="Voltar">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Main Video Area -->
+    <div class="video-section">
+      <div *ngIf="!camera" class="loading-state">
+        <div class="spinner-border text-primary" role="status"></div>
+        <p class="text-muted mt-2">Conectando à câmera...</p>
+      </div>
+
+      <div *ngIf="camera" class="video-container">
+        <iframe *ngIf="videoUrl" [src]="videoUrl" frameborder="0" allowfullscreen>
+        </iframe>
+
+        <div *ngIf="!videoUrl" class="error-state">
+          <i class="bi bi-camera-video-off text-muted" style="font-size: 3rem;"></i>
+          <p class="text-muted mt-2">Sinal indisponível</p>
+          <button class="btn btn-primary mt-3" (click)="goBack()">Voltar</button>
+        </div>
       </div>
     </div>
-    <button class="btn btn-secondary mt-3" (click)="goBack()">Voltar para a Lista</button>
+
   </div>
 </div>
