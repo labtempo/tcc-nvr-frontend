@@ -15,21 +15,31 @@
 
     <!-- Main Video Area -->
     <div class="video-section">
-      <div *ngIf="!camera" class="loading-state">
+
+      <!-- Loading Initial -->
+      <div *ngIf="isLoading && !hasError && !videoUrl" class="loading-state">
         <div class="spinner-border text-primary" role="status"></div>
         <p class="text-muted mt-2">Conectando à câmera...</p>
       </div>
 
-      <div *ngIf="camera" class="video-container">
-        <iframe *ngIf="videoUrl" [src]="videoUrl" frameborder="0" allowfullscreen>
+      <!-- Video Container (Visible if No Error) -->
+      <div class="video-container" *ngIf="!hasError">
+        <iframe *ngIf="videoUrl" [src]="videoUrl" frameborder="0" allowfullscreen (load)="onIframeLoad()">
         </iframe>
-
-        <div *ngIf="!videoUrl" class="error-state">
-          <i class="bi bi-camera-video-off text-muted" style="font-size: 3rem;"></i>
-          <p class="text-muted mt-2">Sinal indisponível</p>
-          <button class="btn btn-primary mt-3" (click)="goBack()">Voltar</button>
-        </div>
       </div>
+
+      <!-- Offline/Error Placeholder (Cyberpunk Style) -->
+      <div *ngIf="hasError" class="offline-placeholder">
+        <div class="scan-line"></div>
+        <div class="icon-wrapper">
+          <i class="bi bi-wifi-off"></i>
+        </div>
+        <span class="offline-text">SINAL PERDIDO</span>
+        <span class="offline-subtext">VERIFIQUE A CONEXÃO</span>
+
+        <button class="btn btn-primary mt-4" (click)="goBack()">Voltar</button>
+      </div>
+
     </div>
 
   </div>

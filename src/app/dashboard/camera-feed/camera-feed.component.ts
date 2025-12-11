@@ -13,9 +13,8 @@ import Hls from 'hls.js';
       
       <div class="video-container">
         
-        <!-- Only show video/iframe if active and NO error -->
+        <!-- Vídeo/Iframe (Apenas se Online e Sem Erro) -->
         <ng-container *ngIf="!isOfflineOrError()">
-            <!-- Background to hide loading flash -->
             <div class="placeholder-icon">
               <i class="bi bi-camera-video"></i>
             </div>
@@ -31,7 +30,7 @@ import Hls from 'hls.js';
             </iframe>
         </ng-container>
 
-        <!-- Cyberpunk/Pro Offline Placeholder -->
+        <!-- Placeholder Offline / Erro -->
         <div *ngIf="isOfflineOrError()" class="offline-placeholder">
           <div class="scan-line"></div>
           <div class="icon-wrapper">
@@ -41,7 +40,7 @@ import Hls from 'hls.js';
           <span class="offline-subtext">VERIFIQUE A CONEXÃO</span>
         </div>
         
-        <!-- Loading State -->
+        <!-- Loading -->
         <div *ngIf="isLoading && !isOfflineOrError()" class="loading-overlay">
             <div class="spinner-border text-primary" role="status"></div>
         </div>
@@ -88,23 +87,12 @@ import Hls from 'hls.js';
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #1e293b; /* Dark Slate */
+      background-color: #1e293b;
       width: 100%;
       height: 100%;
-      /* Placeholder Pattern */
-      background-image: 
-        radial-gradient(circle at center, rgba(255,255,255,0.05) 0%, transparent 70%);
     }
 
-    /* Icon placeholder using pseudo-element */
-    .video-container::before {
-      content: '\\F234'; /* bi-camera-video in Bootstrap Icons usually, or similar. */
-      /* Actually, let's use a class or distinct element for reliability since font codes vary */
-      /* Falling back to simple background styling first, I'll add an icon element in HTML instead */
-    }
-
-    /* Icon placeholder using pseudo-element removal */
-    
+    /* Icon placeholder */
     .placeholder-icon {
       position: absolute;
       top: 50%;
@@ -120,9 +108,10 @@ import Hls from 'hls.js';
       height: 100%;
       object-fit: cover;
       position: relative;
-      z-index: 1; /* Sit above placeholder */
+      z-index: 1;
     }
 
+    /* Estilos Offline / Cyberpunk */
     .offline-placeholder {
       position: absolute;
       top: 0; left: 0; right: 0; bottom: 0;
@@ -139,7 +128,7 @@ import Hls from 'hls.js';
     .icon-wrapper {
         font-size: 3.5rem;
         margin-bottom: 1rem;
-        color: #ef4444; /* Red for alert */
+        color: #ef4444; /* Vermelho Erro */
         opacity: 0.8;
         animation: pulse 2s infinite;
     }
@@ -161,7 +150,6 @@ import Hls from 'hls.js';
         letter-spacing: 1px;
     }
 
-    /* Scanline Effect */
     .scan-line {
       position: absolute;
       top: 0;
@@ -263,16 +251,13 @@ import Hls from 'hls.js';
       width: 100%;
       height: 100%;
       border: none;
-      pointer-events: auto; /* Allow interaction */
-      /* Transparent so placeholder shows while loading (if possible) */
+      pointer-events: auto;
       background: transparent; 
       position: absolute;
       top: 0;
       left: 0;
       z-index: 1;
     }
-
-
   `]
 })
 export class CameraFeedComponent implements OnInit, OnDestroy {
@@ -282,14 +267,13 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
   @Input() imageSrc: string = '';
   @Input() hlsUrl: string = '';
   @Input() iframeUrl: SafeResourceUrl | null = null;
-  @Input() rawUrl: string = ''; // New input for checking availability
+  @Input() rawUrl: string = '';
 
   @ViewChild('videoElement') videoElementRef!: ElementRef<HTMLVideoElement>;
   private hls: Hls | null = null;
 
   hasError: boolean = false;
   isLoading: boolean = true;
-  private checkInterval: any;
 
   constructor(private http: HttpClient) { }
 
@@ -306,21 +290,44 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
     this.isLoading = true;
     this.hasError = false;
 
-    // Status check
+    // Status offline via props
     if (this.status !== 'LIVE') {
       this.isLoading = false;
       return;
     }
 
-    // If we have a raw URL to check (for Iframe scenarios)
+    // Se tivermos URL raw para checar
     if (this.rawUrl && !this.hlsUrl) {
-      // FORCE SUCCESS: Bypass strict checking for iframes to ensure they appear.
-      // The iframe itself will handle loading/errors visually.
-      this.isLoading = false;
-      this.hasError = false;
-      return;
+
+      // Ignorar verificação para YouTube (evitar CORS)
+      if (this.rawUrl.includes('youtube.com') || this.rawUrl.includes('youtu.be') || this.rawUrl.includes('embed')) {
+        this.isLoading = false;
+        this.hasError = false;
+        return;
+      }
+
+      // Testar conexão
+      this.http.get(this.rawUrl, { responseType: 'text' }).subscribe({
+        next: () => {
+          this.hasError = false;
+          this.isLoading = false;
+        },
+        error: (err) => {
+          console.warn(`Stream verification failed for ${this.name}`, err);
+          // Aceitar 200 ou 0 (CORS opaco) como sucesso relativo, 
+          // mas se falhar conexão real (net::ERR_CONNECTION_REFUSED), geralmente traz status 0 com error event progress.
+          // Para simplificar: se for erro HTTP real, assume erro.
+
+          if (err.status >= 200 && err.status < 300) {
+            this.hasError = false;
+          } else {
+            // Tratamento agressivo: qualquer erro vira offline visual
+            this.hasError = true;
+          }
+          this.isLoading = false;
+        }
+      });
     } else {
-      // If HLS or no raw URL provided, just assume OK until error
       this.isLoading = false;
     }
   }
@@ -330,8 +337,6 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
   }
 
   onIframeLoad() {
-    // Iframe loaded (status 200 or 404, we can't tell easily here, 
-    // but the http check above should have caught the 404)
     this.isLoading = false;
   }
 
