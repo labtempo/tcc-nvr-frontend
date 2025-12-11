@@ -1,35 +1,72 @@
+<div class="login-page">
+  <!-- O Painel de Vidro -->
+  <div class="login-container glass-panel">
 
-<div class="container mt-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card">
-        <div class="card-header">
-          <h3 class="text-center">Registro</h3>
-        </div>
-        <div class="card-body">
-          <form (ngSubmit)="onRegister()">
-            <div class="form-group">
-              <label for="email">Email</label>
-              <input type="email" id="email" class="form-control" [(ngModel)]="email" name="email" placeholder="Email" required>
-            </div>
-            <div class="form-group">
-              <label for="full_name">Nome Completo</label>
-              <input type="text" id="full_name" class="form-control" [(ngModel)]="full_name" name="full_name" placeholder="Nome Completo" required>
-            </div>
-            <div class="form-group">
-              <label for="password">Senha</label>
-              <input type="password" id="password" class="form-control" [(ngModel)]="password" name="password" placeholder="Senha" required>
-            </div>
-            <button type="submit" class="btn btn-primary btn-block" [disabled]="loading">Registrar</button>
-            <div *ngIf="errorMessage" class="alert alert-danger mt-3">
-              {{ errorMessage }}
-            </div>
-          </form>
-        </div>
-        <div class="card-footer text-center">
-          <a [routerLink]="['/login']">Já tem uma conta? Faça login</a>
+    <!-- Cabeçalho -->
+    <div class="header-section">
+      <img src="assets/Logo_UFF_(blue).svg" alt="UFF Logo" class="uff-logo">
+      <h1 class="app-title glow-text">MONITORAMENTO</h1>
+      <p class="subtitle">Criar Conta</p>
+    </div>
+
+    <!-- Formulário -->
+    <form class="login-form" (ngSubmit)="onRegister()">
+
+      <!-- Nome Completo -->
+      <div class="form-group">
+        <label class="form-label">Nome Completo</label>
+        <div class="input-wrapper">
+          <i class="bi bi-person"></i>
+          <input type="text" class="form-input" placeholder="Seu Nome" [(ngModel)]="full_name" name="full_name"
+            required>
         </div>
       </div>
-    </div>
+
+      <!-- Email -->
+      <div class="form-group">
+        <label class="form-label">Email</label>
+        <div class="input-wrapper">
+          <i class="bi bi-envelope"></i>
+          <input type="email" class="form-input" placeholder="seu@email.com" [(ngModel)]="email" name="email" required>
+        </div>
+      </div>
+
+      <!-- Senha -->
+      <div class="form-group">
+        <label class="form-label">Senha</label>
+        <div class="input-wrapper">
+          <i class="bi bi-lock"></i>
+          <input type="password" class="form-input" placeholder="••••••••" [(ngModel)]="password" name="password"
+            required>
+        </div>
+      </div>
+
+      <!-- Confirmar Senha -->
+      <div class="form-group">
+        <label class="form-label">Confirmar Senha</label>
+        <div class="input-wrapper">
+          <i class="bi bi-lock-fill"></i>
+          <input type="password" class="form-input" placeholder="••••••••" [(ngModel)]="confirm_password"
+            name="confirm_password" required>
+        </div>
+      </div>
+
+      <!-- Mensagem de Erro -->
+      <div class="status-message" *ngIf="errorMessage || loading">
+        <span class="text-danger" *ngIf="errorMessage && !loading">{{ errorMessage }}</span>
+        <span class="text-info" *ngIf="loading">Registrando...</span>
+      </div>
+
+      <!-- Botão Registrar -->
+      <button type="submit" class="btn-login" [disabled]="loading">
+        {{ loading ? 'AGUARDE...' : 'Registrar' }}
+      </button>
+
+      <!-- Rodapé -->
+      <div class="footer-links" style="margin-top: 1rem; text-align: center;">
+        <a routerLink="/login" class="link-register">Fazer Login</a>
+      </div>
+
+    </form>
   </div>
 </div>

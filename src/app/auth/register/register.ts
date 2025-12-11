@@ -1,15 +1,15 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../auth';
-import { Router, RouterLink} from '@angular/router';
-import { FormsModule } from '@angular/forms'; 
+import { Router, RouterLink } from '@angular/router';
+import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
 @Component({
   selector: 'app-register',
-  standalone: true, 
+  standalone: true,
   imports: [
-    FormsModule,    
-    RouterLink,     
+    FormsModule,
+    RouterLink,
     CommonModule
   ],
   templateUrl: './register.html',
@@ -19,6 +19,7 @@ export class RegisterComponent {
   email = '';
   full_name = '';
   password = '';
+  confirm_password = '';
   errorMessage: string | null = null;
   loading = false;
 

@@ -34,9 +34,7 @@ import Hls from 'hls.js';
         </div>
       </div>
 
-      <div class="camera-footer">
-        <span class="timestamp">{{ timestamp }}</span>
-      </div>
+
     </div>
   `,
   styles: [`
@@ -162,29 +160,13 @@ import Hls from 'hls.js';
     .dot.live { background-color: var(--color-success); box-shadow: 0 0 8px var(--color-success); }
     .dot.offline { background-color: var(--color-danger); }
 
-    .camera-footer {
-      position: absolute;
-      bottom: 16px;
-      right: 16px;
-      z-index: 10;
-    }
 
-    .timestamp {
-      font-family: var(--font-mono);
-      font-size: 0.9rem;
-      color: var(--text-primary);
-      text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-      background-color: rgba(0,0,0,0.4);
-      padding: 4px 8px;
-      border-radius: 4px;
-    }
   `]
 })
 export class CameraFeedComponent implements OnInit, OnDestroy {
   @Input() name: string = 'Camera';
   @Input() status: 'LIVE' | 'OFFLINE' | string = 'LIVE';
   @Input() variant: 'NORMAL' | 'MOTION' = 'NORMAL';
-  @Input() timestamp: string = '';
   @Input() imageSrc: string = '';
   @Input() hlsUrl: string = '';
 

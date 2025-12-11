@@ -9,7 +9,7 @@ import { RouterModule } from '@angular/router';
   template: `
     <div class="sidebar-container glass-panel">
       <div class="logo-area">
-        <span class="logo-text">UFF</span>
+        <img src="assets/Logo_UFF_(blue).svg" alt="UFF Logo" class="uff-logo-sidebar">
       </div>
       
       <nav class="nav-links">
@@ -47,11 +47,17 @@ import { RouterModule } from '@angular/router';
     }
 
     .logo-area {
-      margin-bottom: 3rem;
-      color: var(--color-primary);
-      font-weight: 800;
-      font-size: 1.5rem;
-      letter-spacing: -0.05em;
+      margin-bottom: 2rem;
+      display: flex;
+      justify-content: center;
+      width: 100%;
+    }
+
+    .uff-logo-sidebar {
+      width: 45px;
+      height: auto;
+      filter: brightness(0) invert(1) drop-shadow(0 0 5px rgba(255,255,255,0.3));
+      opacity: 0.9;
     }
 
     .nav-links {

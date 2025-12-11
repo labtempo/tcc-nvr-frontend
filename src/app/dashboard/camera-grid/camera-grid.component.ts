@@ -53,7 +53,6 @@ import { Camera } from '../../camera.model';
           <app-camera-feed 
             [name]="cam.name" 
             [status]="getStatus(cam)" 
-            [timestamp]="getTimestamp()"
             [hlsUrl]="cam.visualisation_url_hls || ''">
           </app-camera-feed>
         </div>
@@ -209,7 +208,5 @@ export class CameraGridComponent implements OnInit {
     return cam.visualisation_url_hls ? 'LIVE' : 'OFFLINE';
   }
 
-  getTimestamp(): string {
-    return new Date().toLocaleString('pt-BR');
-  }
+
 }

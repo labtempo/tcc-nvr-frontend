@@ -9,7 +9,7 @@ import { CommonModule } from '@angular/common';
     <header class="topbar-container glass-panel">
       <div class="title-section">
         <h1 class="page-title">
-          <span class="text-muted">SYSTEM //</span> MONITORAMENTO
+           MONITORAMENTO
         </h1>
       </div>
       
