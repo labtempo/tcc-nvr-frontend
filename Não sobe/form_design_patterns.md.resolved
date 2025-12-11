@@ -1,0 +1,95 @@
+# Form Design Patterns - Cyber Slate Theme
+
+Este guia define o padrão visual para formulários (Criar/Editar Câmera) para alinhar com o novo design do sistema.
+
+## 1. Container Geral
+O formulário não deve flutuar no nada. Ele deve estar contido em um **Painel de Vidro** centralizado.
+
+*   **Max-Width**: `600px` (para foco e legibilidade).
+*   **Background**: Use a classe utilitária `.glass-panel`.
+*   **Padding**: `2.5rem` (espaçoso).
+*   **Border Radius**: `16px`.
+
+```html
+<div class="form-container glass-panel">
+  <!-- Conteúdo -->
+</div>
+```
+
+## 2. Inputs e Labels
+Abandone o estilo padrão do Bootstrap branco.
+
+### Input Styles
+*   **Background**: `rgba(15, 23, 42, 0.6)` (Slate 950 mais transparente).
+*   **Border**: `1px solid #334155` (Slate 700).
+*   **Text Color**: `#f8fafc`.
+*   **Focus State**:
+    *   Border Color: `#3b82f6` (Primary).
+    *   Box Shadow: `0 0 0 4px rgba(59, 130, 246, 0.1)`.
+    *   Transition: `all 0.2s ease`.
+*   **Height**: `48px` (Touch friendly).
+
+### Labels
+*   **Position**: Acima do input.
+*   **Typography**: `font-weight: 500`, `font-size: 0.875rem`, color `#94a3b8` (Secondary).
+*   **Spacing**: `margin-bottom: 0.5rem`.
+
+## 3. Toggles (Switches)
+Em vez de checkboxes quadrados nativos para "Está gravando?", use **Toggles**.
+
+*   Visual de "Pílula" (Pill shape).
+*   **Unchecked**: Cinza escuro (`#334155`).
+*   **Checked**: Verde Neon (`#10b981`) ou Azul (`#3b82f6`).
+*   Animação suave da bolinha deslizando.
+
+## 4. Botões de Ação
+*   **Localização**: Alinhados à direita ou largura total (full width) dependendo do contexto.
+*   **Primário (Salvar)**:
+    *   Gradient discreto ou Sólido Azul.
+    *   `font-weight: 600`.
+    *   `letter-spacing: 0.5px`.
+*   **Secundário (Cancelar)**:
+    *   Ghost button (fundo transparente, borda fina ou apenas texto).
+    *   Color: `#94a3b8` `hover: #f8fafc`.
+
+## 5. Exemplo de CSS (Snippet para Devs)
+
+```css
+/* Container Centralizado */
+.form-page {
+  display: flex;
+  justify-content: center;
+  align-items: center; /* Se quiser centralizar verticalmente também */
+  height: 100%;
+  padding: 2rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-label {
+  display: block;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-input {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: var(--text-primary);
+  font-family: var(--font-main);
+  transition: all 0.2s;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  background: rgba(0, 0, 0, 0.4);
+}
+```

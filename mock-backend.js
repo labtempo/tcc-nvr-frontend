@@ -15,7 +15,7 @@ let cameras = [
     id: 1,
     name: 'Entrada Principal',
     rtsp_url: 'rtsp://192.168.1.101:554/stream',
-    visualisation_url_hls: 'https://test-streams.mux.dev/x36xhzz/x36xhzz.m3u8', // Public HLS test stream
+    visualisation_url_hls: 'https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=1&controls=0', // Mock WebRTC (YouTube Live)
     is_recording: true,
     created_by_user_Id: 1
   },
@@ -23,7 +23,7 @@ let cameras = [
     id: 2,
     name: 'Garagem Subsolo',
     rtsp_url: 'rtsp://192.168.1.102:554/stream',
-    visualisation_url_hls: 'https://bitdash-a.akamaihd.net/content/sintel/hls/playlist.m3u8',
+    visualisation_url_hls: 'https://www.youtube.com/embed/4xDzrJKXOOY?autoplay=1&mute=1&controls=0', // Synthwave Radio
     is_recording: true,
     created_by_user_Id: 1
   },
@@ -31,7 +31,7 @@ let cameras = [
     id: 3,
     name: 'Corredor Leste',
     rtsp_url: 'rtsp://192.168.1.103:554/stream',
-    visualisation_url_hls: '', // Offline
+    visualisation_url_hls: '', // Simulates Offline/Local
     is_recording: false,
     created_by_user_Id: 1
   },
@@ -39,7 +39,7 @@ let cameras = [
     id: 4,
     name: 'Área Externa',
     rtsp_url: 'rtsp://192.168.1.104:554/stream',
-    visualisation_url_hls: 'https://mnmedias.api.telequebec.tv/m3u8/29880.m3u8',
+    visualisation_url_hls: '',
     is_recording: true,
     created_by_user_Id: 1
   }

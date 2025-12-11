@@ -30,15 +30,6 @@ export class CameraViewComponent implements OnInit {
     this.router.navigate(['/cameras']);
   }
 
-  private formatName(name: string): string {
-    // Formata o nome para o padrão do backend
-    return name
-      .toLowerCase()
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, '_')
-      .replace(/[^\w_]/g, '');
-  }
-
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
     if (id) {
@@ -46,7 +37,7 @@ export class CameraViewComponent implements OnInit {
         (cam: any) => {
           this.camera = cam;
           if (this.camera && this.camera.name) {
-            const formattedName = this.formatName(this.camera.name);
+            const formattedName = CameraService.formatName(this.camera.name);
             const url = `http://localhost:8889/live/${formattedName}/`;
             this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
           } else {
