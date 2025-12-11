@@ -22,6 +22,7 @@ export class SettingsComponent implements OnInit {
 
     // Local copies for form binding to avoid strict mode issues
     retentionDays: number = 30;
+    recordingSplitMinutes: number = 1;
 
     constructor(
         private settingsService: SettingsService,
@@ -35,6 +36,7 @@ export class SettingsComponent implements OnInit {
         this.settingsService.settings$.subscribe(s => {
             this.settings = JSON.parse(JSON.stringify(s)); // Deep copy 
             this.retentionDays = this.settings.storage.retentionDays;
+            this.recordingSplitMinutes = this.settings.storage.recordingSplitMinutes || 1;
         });
 
         // Load cameras purely for naming purposes in the priorities list
@@ -44,6 +46,7 @@ export class SettingsComponent implements OnInit {
     saveSettings() {
         // Update individual bound fields back to object
         this.settings.storage.retentionDays = this.retentionDays;
+        this.settings.storage.recordingSplitMinutes = this.recordingSplitMinutes;
 
         this.settingsService.updateSettings(this.settings);
         this.toastService.success('Configurações salvas com sucesso!');

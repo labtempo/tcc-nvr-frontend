@@ -13,6 +13,7 @@ export interface AppSettings {
     };
     storage: {
         retentionDays: number;
+        recordingSplitMinutes: number; // New split option
         autoCleanup: boolean;
     };
     system: {
@@ -32,6 +33,7 @@ const DEFAULT_SETTINGS: AppSettings = {
     },
     storage: {
         retentionDays: 30,
+        recordingSplitMinutes: 1,
         autoCleanup: true
     },
     system: {

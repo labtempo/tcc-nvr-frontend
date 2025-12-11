@@ -6,7 +6,6 @@ import { CameraService } from '../camera';
 import { Camera } from '../camera.model';
 import { ConfirmDialogService } from '../shared/confirm-dialog/confirm-dialog.service';
 import { ToastService } from '../shared/toast/toast.service';
-import { SettingsService } from '../settings/settings.service';
 
 @Component({
   selector: 'app-camera-list',
@@ -448,8 +447,7 @@ export class CameraListComponent implements OnInit {
   constructor(
     private cameraService: CameraService,
     private confirmService: ConfirmDialogService,
-    private toastService: ToastService,
-    private settingsService: SettingsService
+    private toastService: ToastService
   ) { }
 
   ngOnInit(): void {

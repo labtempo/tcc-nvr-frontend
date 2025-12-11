@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { AuthService } from '../auth';
 import { Router, RouterLink } from '@angular/router';
+import { ToastService } from '../../shared/toast/toast.service';
 import { FormsModule } from '@angular/forms';
 import { CommonModule } from '@angular/common';
 
@@ -23,14 +24,18 @@ export class RegisterComponent {
   errorMessage: string | null = null;
   loading = false;
 
-  constructor(private authService: AuthService, private router: Router) { }
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private toastService: ToastService
+  ) { }
 
   onRegister(): void {
     this.errorMessage = null;
     this.loading = true;
     this.authService.register(this.email, this.full_name, this.password).subscribe(
       () => {
-        alert('Registro bem-sucedido! Faça login para continuar.');
+        this.toastService.success('Registro bem-sucedido! Faça login para continuar.');
         this.router.navigate(['/login']);
         this.loading = false;
       },

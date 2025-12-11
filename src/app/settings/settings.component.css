@@ -211,6 +211,57 @@ input:checked+.slider:before {
     border-color: rgba(255, 255, 255, 0.2);
 }
 
+/* --- SYSTEM INFO CARD (New) --- */
+.system-info-card {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 1.5rem;
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.info-item .label {
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.info-item .value {
+    font-size: 1rem;
+    color: white;
+    font-weight: 500;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+.status-ok {
+    color: #10b981 !important;
+    /* Green */
+    text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.status-ok::before {
+    content: '';
+    display: block;
+    width: 8px;
+    height: 8px;
+    background: #10b981;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #10b981;
+}
+
 /* --- MODAL --- */
 .modal-backdrop {
     position: fixed;

@@ -59,6 +59,21 @@
 
             <div class="control-row">
                 <div class="label-group">
+                    <label class="control-label">Quebra de Gravação (Minutos)</label>
+                    <span class="control-desc">Duração de cada segmento de videoclipe salvo</span>
+                </div>
+                <select class="form-select" [(ngModel)]="recordingSplitMinutes" style="width: 150px;">
+                    <option [ngValue]="1">1 Minuto</option>
+                    <option [ngValue]="5">5 Minutos</option>
+                    <option [ngValue]="10">10 Minutos</option>
+                    <option [ngValue]="15">15 Minutos</option>
+                    <option [ngValue]="30">30 Minutos</option>
+                    <option [ngValue]="60">1 Hora</option>
+                </select>
+            </div>
+
+            <div class="control-row">
+                <div class="label-group">
                     <label class="control-label">Limpeza Automática</label>
                     <span class="control-desc">Apagar arquivos antigos automaticamente</span>
                 </div>
@@ -81,10 +96,6 @@
                 <div class="info-item">
                     <span class="label">Status Backend</span>
                     <span class="value status-ok">Conectado</span>
-                </div>
-                <div class="info-item">
-                    <span class="label">Conexão Ativa</span>
-                    <span class="value">Websocket Seguro</span>
                 </div>
             </div>
         </div>
