@@ -24,6 +24,7 @@ export const routes: Routes = [
       { path: 'cameras/edit/:id', component: CameraEditComponent },
       { path: 'cameras/view/:id', component: CameraViewComponent },
       { path: 'cameras/playback/:id', component: CameraPlaybackComponent },
+      { path: 'playback', loadComponent: () => import('./playback-selection/playback-selection').then(m => m.PlaybackSelectionComponent) },
       { path: 'settings', component: SettingsComponent },
 
     ]

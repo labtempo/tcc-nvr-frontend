@@ -296,7 +296,16 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
       return;
     }
 
-    // Se tivermos URL raw para checar
+    // Se já temos iframeUrl configurado, não fazer verificação HTTP
+    // O iframe vai carregar e chamar onIframeLoad quando estiver pronto
+    if (this.iframeUrl) {
+      // Não marcar como erro, deixar o iframe tentar carregar
+      this.hasError = false;
+      // isLoading será desativado no onIframeLoad
+      return;
+    }
+
+    // Se tivermos URL raw para checar (e não temos iframe)
     if (this.rawUrl && !this.hlsUrl) {
 
       // Ignorar verificação para YouTube (evitar CORS)
@@ -313,15 +322,14 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         error: (err) => {
-          console.warn(`Stream verification failed for ${this.name}`, err);
-          // Aceitar 200 ou 0 (CORS opaco) como sucesso relativo, 
-          // mas se falhar conexão real (net::ERR_CONNECTION_REFUSED), geralmente traz status 0 com error event progress.
-          // Para simplificar: se for erro HTTP real, assume erro.
+          console.warn(`Stream verification failed for ${this.name} (Status: ${err.status})`, err);
 
-          if (err.status >= 200 && err.status < 300) {
+          // Relaxed Check: Accept 2xx OR 0 (CORS opaque)
+          // Often local streaming servers (like MediaMTX) might not return CORS headers for this probe,
+          // resulting in status 0. We treat this as "connected" to avoid false negatives.
+          if (err.status === 0 || (err.status >= 200 && err.status < 300)) {
             this.hasError = false;
           } else {
-            // Tratamento agressivo: qualquer erro vira offline visual
             this.hasError = true;
           }
           this.isLoading = false;

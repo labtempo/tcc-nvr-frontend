@@ -1,0 +1,40 @@
+<div class="page-container glass-panel">
+    <div class="page-header">
+        <div>
+            <h2 class="section-title">Selecionar Câmera</h2>
+            <p class="section-subtitle">Escolha uma câmera para visualizar as gravações</p>
+        </div>
+    </div>
+
+    <div class="camera-grid" *ngIf="!isLoading">
+        <div class="camera-card" *ngFor="let cam of cameras" [routerLink]="['/cameras/playback', cam.id]">
+            <div class="card-content">
+                <div class="icon-wrapper">
+                    <i class="bi bi-film"></i>
+                </div>
+                <div class="camera-info">
+                    <h3 class="camera-name">{{ cam.name }}</h3>
+                    <p class="camera-url">{{ getMaskedUrl(cam.rtsp_url) }}</p>
+                    <div class="status-indicator" [class.recording]="cam.is_recording">
+                        <span class="dot"></span>
+                        {{ cam.is_recording ? 'Gravando' : 'Offline' }}
+                    </div>
+                </div>
+            </div>
+            <div class="card-action">
+                <span>Ver Gravações</span>
+                <i class="bi bi-chevron-right"></i>
+            </div>
+        </div>
+
+        <div *ngIf="cameras.length === 0" class="empty-state">
+            <i class="bi bi-camera-video-off"></i>
+            <p>Nenhuma câmera disponível.</p>
+        </div>
+    </div>
+
+    <div *ngIf="isLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Carregando câmeras...</p>
+    </div>
+</div>

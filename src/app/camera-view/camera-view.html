@@ -16,28 +16,14 @@
     <!-- Main Video Area -->
     <div class="video-section">
 
-      <!-- Loading Initial -->
-      <div *ngIf="isLoading && !hasError && !videoUrl" class="loading-state">
+      <ng-container *ngIf="camera && iframeUrl">
+        <app-camera-feed [name]="camera.name" [status]="'LIVE'" [iframeUrl]="iframeUrl" [rawUrl]="rawUrl">
+        </app-camera-feed>
+      </ng-container>
+
+      <div *ngIf="!camera" class="loading-state">
         <div class="spinner-border text-primary" role="status"></div>
-        <p class="text-muted mt-2">Conectando à câmera...</p>
-      </div>
-
-      <!-- Video Container (Visible if No Error) -->
-      <div class="video-container" *ngIf="!hasError">
-        <iframe *ngIf="videoUrl" [src]="videoUrl" frameborder="0" allowfullscreen (load)="onIframeLoad()">
-        </iframe>
-      </div>
-
-      <!-- Offline/Error Placeholder (Cyberpunk Style) -->
-      <div *ngIf="hasError" class="offline-placeholder">
-        <div class="scan-line"></div>
-        <div class="icon-wrapper">
-          <i class="bi bi-wifi-off"></i>
-        </div>
-        <span class="offline-text">SINAL PERDIDO</span>
-        <span class="offline-subtext">VERIFIQUE A CONEXÃO</span>
-
-        <button class="btn btn-primary mt-4" (click)="goBack()">Voltar</button>
+        <p class="text-muted mt-2">Carregando câmera...</p>
       </div>
 
     </div>

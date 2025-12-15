@@ -22,12 +22,12 @@ import { CameraService, RecordingSegment } from '../camera';
 
         <!-- Date Picker (Mock) -->
         <div class="date-selector">
-           <button class="btn-icon"><i class="bi bi-chevron-left"></i></button>
+           <button class="btn-icon" (click)="changeDate(-1)"><i class="bi bi-chevron-left"></i></button>
            <div class="current-date">
              <i class="bi bi-calendar3"></i>
-             <span>{{ selectedDate | date:'dd MMM yyyy' }}</span>
+             <span>{{ selectedDate | date:'dd MMM yyyy' : 'UTC' }}</span>
            </div>
-           <button class="btn-icon"><i class="bi bi-chevron-right"></i></button>
+           <button class="btn-icon" (click)="changeDate(1)"><i class="bi bi-chevron-right"></i></button>
         </div>
 
         <!-- Segments List -->
@@ -264,14 +264,33 @@ export class CameraPlaybackComponent implements OnInit {
 
   ngOnInit(): void {
     this.cameraId = Number(this.route.snapshot.paramMap.get('id'));
-    this.selectedDate = new Date().toISOString().split('T')[0];
+    // Initialize with local date
+    const now = new Date();
+    this.selectedDate = this.formatDateInput(now);
     this.loadRecordings();
   }
 
+  changeDate(days: number): void {
+    const current = new Date(this.selectedDate + 'T00:00:00');
+    current.setDate(current.getDate() + days);
+    this.selectedDate = this.formatDateInput(current);
+    this.loadRecordings();
+  }
+
+  private formatDateInput(pDate: Date): string {
+    const year = pDate.getFullYear();
+    const month = ('0' + (pDate.getMonth() + 1)).slice(-2);
+    const day = ('0' + pDate.getDate()).slice(-2);
+    return `${year}-${month}-${day}`;
+  }
+
   loadRecordings(): void {
-    const startDate = new Date(this.selectedDate).toISOString();
+    // Construct start and end for the selected LOCAL day
+    const start = new Date(this.selectedDate + 'T00:00:00');
+    const end = new Date(this.selectedDate + 'T23:59:59.999');
+
     this.isLoading = true;
-    this.cameraService.getRecordings(this.cameraId, startDate).subscribe({
+    this.cameraService.getRecordings(this.cameraId, start.toISOString(), end.toISOString()).subscribe({
       next: (data) => {
         this.recordings = data;
         this.isLoading = false;
