@@ -43,12 +43,8 @@ export class CameraViewComponent implements OnInit {
           this.camera = cam;
           if (this.camera && this.camera.name) {
 
-            // Determinar URL (Local 8889 ou HLS do banco)
-            let url = cam.visualisation_url_hls;
-            if (!url) {
-              const formattedName = CameraService.formatName(this.camera.name);
-              url = `http://localhost:8889/live/${formattedName}/`;
-            }
+            const formattedName = CameraService.formatName(this.camera.name);
+            const url = `http://localhost:8889/live/${formattedName}/`;
 
             // Armazenar URL Segura e Raw
             this.rawUrl = url;

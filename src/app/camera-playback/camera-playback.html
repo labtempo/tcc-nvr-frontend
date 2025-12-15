@@ -1,0 +1,103 @@
+<div class="recordings-layout">
+
+    <!-- COLUMN 1: Camera Selector -->
+    <nav class="cameras-sidebar">
+        <div class="sidebar-header">
+            <h3>Fontes</h3>
+            <div class="search-box">
+                <i class="bi bi-search"></i>
+                <input type="text" placeholder="Buscar câmera...">
+            </div>
+        </div>
+
+        <div class="camera-list">
+            <div *ngFor="let cam of cameras" class="camera-item" [class.active]="cam.id === selectedCameraId"
+                (click)="selectCamera(cam.id)">
+                <i class="bi bi-camera-video"></i>
+                <span class="cam-name">{{ cam.name }}</span>
+                <span *ngIf="cam.is_recording" class="rec-dot"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN STAGE -->
+    <div class="main-stage">
+
+        <!-- TOP STRIP: Date Navigator -->
+        <header class="date-strip">
+            <div class="strip-label">DATA:</div>
+            <div class="date-pills">
+                <button *ngFor="let d of availableDates" class="date-pill" [class.active]="isSameDay(d, selectedDate)"
+                    (click)="selectDate(d)">
+                    <div class="day-name">{{ d | date:'EEE' }}</div>
+                    <div class="day-num">{{ d | date:'dd' }}</div>
+                </button>
+            </div>
+        </header>
+
+        <!-- CONTENT GRID -->
+        <div class="stage-content">
+
+            <!-- PLAYER AREA -->
+            <div class="player-wrapper">
+                <div class="video-frame">
+                    <video *ngIf="currentVideoUrl; else emptyState" [src]="currentVideoUrl" controls autoplay
+                        class="main-video">
+                    </video>
+
+                    <ng-template #emptyState>
+                        <div class="empty-player">
+                            <i class="bi bi-play-circle-fill"></i>
+                            <p>Selecione um evento para iniciar</p>
+                        </div>
+                    </ng-template>
+                </div>
+
+                <!-- Global Timeline Control -->
+                <div class="timeline-control glass-panel" *ngIf="recordings.length > 0">
+                    <span class="time-label">{{ vcformatTime(timelineValue) }}</span>
+                    <input type="range" class="timeline-slider" [min]="timelineMin" [max]="timelineMax"
+                        [(ngModel)]="timelineValue" (input)="onTimelineChange($event)">
+                    <span class="time-label">{{ vcformatTime(timelineMax) }}</span>
+                </div>
+            </div>
+
+            <!-- EVENT FEED (Right Side or Bottom) -->
+            <div class="event-feed glass-panel">
+                <div class="feed-header">
+                    <h4>Eventos</h4>
+                    <span class="badge">{{ recordings.length }}</span>
+                </div>
+
+                <div *ngIf="isLoading" class="loader">Carregando...</div>
+
+                <div *ngIf="!isLoading && recordings.length === 0" class="no-events">
+                    <i class="bi bi-calendar-x"></i>
+                    <p>Sem eventos neste dia</p>
+                </div>
+
+                <div class="feed-list">
+                    <div *ngFor="let rec of recordings" class="event-card" (click)="playSegment(rec)"
+                        [class.active]="currentSegment === rec">
+
+                        <div class="event-time">
+                            {{ vcformatTime(rec.start) }}
+                        </div>
+
+                        <div class="event-info">
+                            <span class="event-type">
+                                <i class="bi bi-film"></i> Gravação
+                            </span>
+                            <span class="event-dur">{{ formatDuration(rec.duration) }}</span>
+                        </div>
+
+                        <div class="play-icon">
+                            <i class="bi bi-play-fill"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
