@@ -5,13 +5,17 @@ import { CameraListComponent } from './camera-list/camera-list';
 import { CameraCreateComponent } from './camera-create/camera-create';
 import { CameraEditComponent } from './camera-edit/camera-edit';
 import { authGuard } from './auth/auth-guard';
+import { roleGuard } from './auth/role-guard';
 import { CameraViewComponent } from './camera-view/camera-view';
 import { CameraPlaybackComponent } from './camera-playback/camera-playback';
 import { SettingsComponent } from './settings/settings.component';
+import { AccessDeniedComponent } from './auth/access-denied/access-denied.component';
 
 export const routes: Routes = [
   { path: 'login', component: LoginComponent },
+  { path: 'login', component: LoginComponent },
   { path: 'register', component: RegisterComponent },
+  { path: 'access-denied', component: AccessDeniedComponent },
   {
     path: '',
     loadComponent: () => import('./layout/dashboard-layout/dashboard-layout.component').then(m => m.DashboardLayoutComponent),
@@ -20,10 +24,22 @@ export const routes: Routes = [
       { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
       { path: 'dashboard', loadComponent: () => import('./dashboard/camera-grid/camera-grid.component').then(m => m.CameraGridComponent) },
       { path: 'cameras', component: CameraListComponent },
-      { path: 'cameras/create', component: CameraCreateComponent },
-      { path: 'cameras/edit/:id', component: CameraEditComponent },
+      {
+        path: 'cameras/create',
+        component: CameraCreateComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' }
+      },
+      {
+        path: 'cameras/edit/:id',
+        component: CameraEditComponent,
+        canActivate: [roleGuard],
+        data: { role: 'admin' }
+      },
+      { path: 'cameras/view/:id', component: CameraViewComponent },
       { path: 'cameras/view/:id', component: CameraViewComponent },
       { path: 'cameras/playback/:id', component: CameraPlaybackComponent },
+      { path: 'playback', component: CameraPlaybackComponent },
       { path: 'settings', component: SettingsComponent },
 
     ]

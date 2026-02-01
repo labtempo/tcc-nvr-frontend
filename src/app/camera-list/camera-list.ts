@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { CameraService } from '../camera';
 import { Camera } from '../camera.model';
+import { AuthService } from '../auth/auth';
 import { ConfirmDialogService } from '../shared/confirm-dialog/confirm-dialog.service';
 import { ToastService } from '../shared/toast/toast.service';
 
@@ -50,7 +51,7 @@ import { ToastService } from '../shared/toast/toast.service';
              </div>
 
 
-            <button [routerLink]="['/cameras/create']" class="btn btn-primary">
+            <button *ngIf="authService.isAdmin()" [routerLink]="['/cameras/create']" class="btn btn-primary">
               <i class="bi bi-plus-lg"></i>
               Nova Câmera
             </button>
@@ -104,12 +105,14 @@ import { ToastService } from '../shared/toast/toast.service';
             <button class="btn-icon" title="Gravações" [routerLink]="['/cameras/playback', cam.id]">
                <i class="bi bi-film"></i>
             </button>
-            <button class="btn-icon" title="Editar" [routerLink]="['/cameras/edit', cam.id]">
-               <i class="bi bi-pencil"></i>
-            </button>
-            <button class="btn-icon danger" title="Excluir" (click)="deleteCamera(cam.id)">
-               <i class="bi bi-trash"></i>
-            </button>
+            <ng-container *ngIf="authService.isAdmin()">
+              <button class="btn-icon" title="Editar" [routerLink]="['/cameras/edit', cam.id]">
+                 <i class="bi bi-pencil"></i>
+              </button>
+              <button class="btn-icon danger" title="Excluir" (click)="deleteCamera(cam.id)">
+                 <i class="bi bi-trash"></i>
+              </button>
+            </ng-container>
           </div>
         </div>
 
@@ -447,7 +450,8 @@ export class CameraListComponent implements OnInit {
   constructor(
     private cameraService: CameraService,
     private confirmService: ConfirmDialogService,
-    private toastService: ToastService
+    private toastService: ToastService,
+    public authService: AuthService
   ) { }
 
   ngOnInit(): void {

@@ -1,3 +1,4 @@
+
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -7,10 +8,10 @@ import { CameraService, RecordingSegment } from '../camera';
 import { Camera } from '../camera.model';
 
 @Component({
-  selector: 'app-camera-playback',
-  standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
-  template: `
+    selector: 'app-camera-playback',
+    standalone: true,
+    imports: [CommonModule, FormsModule, RouterModule],
+    template: `
 <div class="recordings-layout">
 
     <!-- COLUMN 1: Camera Selector -->
@@ -38,13 +39,31 @@ import { Camera } from '../camera.model';
 
         <!-- TOP STRIP: Date Navigator -->
         <header class="date-strip">
-            <div class="strip-label">DATA:</div>
+            <div class="strip-controls left">
+                <button class="nav-btn" (click)="shiftDays(-1)" title="Dias Anteriores">
+                    <i class="bi bi-chevron-left"></i>
+                </button>
+            </div>
+
             <div class="date-pills">
                 <button *ngFor="let d of availableDates" class="date-pill" [class.active]="isSameDay(d, selectedDate)"
                     (click)="selectDate(d)">
                     <div class="day-name">{{ d | date:'EEE' }}</div>
                     <div class="day-num">{{ d | date:'dd' }}</div>
                 </button>
+            </div>
+
+            <div class="strip-controls right">
+                <button class="nav-btn" (click)="shiftDays(1)" title="Próximos Dias">
+                    <i class="bi bi-chevron-right"></i>
+                </button>
+                
+                <div class="calendar-wrapper">
+                    <input type="date" [ngModel]="selectedDate | date:'yyyy-MM-dd'" (ngModelChange)="onDatePick($event)" class="date-input-hidden">
+                    <button class="nav-btn calendar-btn" title="Selecionar Data">
+                        <i class="bi bi-calendar3"></i>
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -54,7 +73,7 @@ import { Camera } from '../camera.model';
             <!-- PLAYER AREA -->
             <div class="player-wrapper">
                 <div class="video-frame">
-                    <video *ngIf="currentVideoUrl; else emptyState" [src]="currentVideoUrl" controls autoplay
+                    <video *ngIf="currentVideoUrl; else emptyState" [src]="currentVideoUrl" autoplay
                         class="main-video">
                     </video>
 
@@ -115,12 +134,11 @@ import { Camera } from '../camera.model';
     </div>
 </div>
   `,
-  styles: [`
+    styles: [`
 /* THE VAULT LAYOUT */
 .recordings-layout {
     display: grid;
     grid-template-columns: 260px 1fr;
-    /* Col 1: Sidebar, Col 2: Main */
     height: 100vh;
     overflow: hidden;
     background-color: var(--bg-dark);
@@ -223,27 +241,47 @@ import { Camera } from '../camera.model';
     height: 70px;
     display: flex;
     align-items: center;
-    padding: 0 2rem;
+    justify-content: space-between; /* Added to spread controls */
+    padding: 0 1rem;
     background: rgba(15, 23, 42, 0.8);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid var(--border-color);
-    gap: 1.5rem;
+    gap: 1rem;
     z-index: 20;
 }
 
-.strip-label {
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: var(--text-muted);
-    letter-spacing: 1px;
+.strip-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.nav-btn {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.nav-btn:hover {
+    background: rgba(255,255,255,0.1);
+    transform: translateY(-1px);
 }
 
 .date-pills {
     display: flex;
-    gap: 1rem;
+    gap: 0.5rem;
     overflow-x: auto;
     padding-bottom: 4px;
-    /* for scrollbar */
+    justify-content: center; /* Center pills */
+    flex: 1;
 }
 
 .date-pills::-webkit-scrollbar {
@@ -253,31 +291,30 @@ import { Camera } from '../camera.model';
 .date-pill {
     background: transparent;
     border: 1px solid var(--border-color);
-    border-radius: 20px;
-    padding: 6px 18px;
+    border-radius: 12px;
+    padding: 4px 14px;
     display: flex;
     flex-direction: column;
     align-items: center;
     cursor: pointer;
     color: var(--text-secondary);
     transition: all 0.2s;
-    min-width: 60px;
+    min-width: 55px;
 }
 
 .date-pill .day-name {
-    font-size: 0.7rem;
+    font-size: 0.65rem;
     text-transform: uppercase;
 }
 
 .date-pill .day-num {
-    font-size: 1.1rem;
+    font-size: 1rem;
     font-weight: 700;
     line-height: 1;
 }
 
 .date-pill:hover {
     border-color: var(--text-secondary);
-    background: rgba(255, 255, 255, 0.05);
 }
 
 .date-pill.active {
@@ -287,12 +324,35 @@ import { Camera } from '../camera.model';
     box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
+/* Calendar Button Wrapper */
+.calendar-wrapper {
+    position: relative;
+    width: 36px;
+    height: 36px;
+}
+
+.date-input-hidden {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0; /* Hidden but clickable */
+    cursor: pointer;
+    z-index: 2;
+}
+
+.calendar-btn {
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
 /* CONTENT GRID */
 .stage-content {
     flex: 1;
     display: grid;
     grid-template-columns: 1fr 340px;
-    /* Video Area | Event Feed */
     overflow: hidden;
 }
 
@@ -398,11 +458,12 @@ import { Camera } from '../camera.model';
     display: flex;
     align-items: center;
     background: rgba(255, 255, 255, 0.03);
-    padding: 12px;
+    padding: 12px 16px; /* Increased side padding */
     border-radius: 8px;
     border: 1px solid transparent;
     cursor: pointer;
     transition: all 0.2s;
+    gap: 16px; /* Increased gap between time and info */
 }
 
 .event-card:hover {
@@ -419,7 +480,8 @@ import { Camera } from '../camera.model';
     font-weight: 700;
     font-size: 1rem;
     color: var(--text-primary);
-    width: 70px;
+    min-width: 80px; /* Increased min-width to prevent overlap */
+    letter-spacing: -0.5px;
 }
 
 .event-info {
@@ -427,11 +489,15 @@ import { Camera } from '../camera.model';
     display: flex;
     flex-direction: column;
     gap: 2px;
+    overflow: hidden; /* Prevent spill */
 }
 
 .event-type {
     font-size: 0.8rem;
     color: var(--text-secondary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .event-dur {
@@ -467,148 +533,175 @@ import { Camera } from '../camera.model';
   `]
 })
 export class CameraPlaybackComponent implements OnInit {
-  // Data Sources
-  cameras: Camera[] = [];
-  recordings: RecordingSegment[] = [];
-  availableDates: Date[] = [];
+    // Data Sources
+    cameras: Camera[] = [];
+    recordings: RecordingSegment[] = [];
+    availableDates: Date[] = [];
 
-  // State
-  selectedCameraId: number = 0;
-  selectedDate: Date = new Date();
+    // State
+    selectedCameraId: number = 0;
+    selectedDate: Date = new Date();
 
-  // Player State
-  currentVideoUrl: SafeUrl | null = null;
-  currentSegment: RecordingSegment | null = null;
-  isLoading = false;
+    // Date State for Navigator
+    currentWeekStart: Date = new Date(); // To track the strip window
 
-  // Timeline State
-  timelineMin: number = 0;
-  timelineMax: number = 0;
-  timelineValue: number = 0;
-  private timelineChangeTimeout: ReturnType<typeof setTimeout> | undefined;
+    // Player State
+    currentVideoUrl: SafeUrl | null = null;
+    currentSegment: RecordingSegment | null = null;
+    isLoading = false;
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private cameraService: CameraService,
-    private sanitizer: DomSanitizer
-  ) { }
+    // Timeline State
+    timelineMin: number = 0;
+    timelineMax: number = 0;
+    timelineValue: number = 0;
+    private timelineChangeTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  ngOnInit(): void {
-    this.generateDateStrip();
-    this.loadCameras();
+    constructor(
+        private route: ActivatedRoute,
+        private router: Router,
+        private cameraService: CameraService,
+        private sanitizer: DomSanitizer
+    ) { }
 
-    // Check route for initial selection
-    this.route.paramMap.subscribe(params => {
-      const id = params.get('id');
-      if (id) {
-        this.selectCamera(Number(id));
-      }
-    });
-  }
+    ngOnInit(): void {
+        // Center the strip on today initially
+        const today = new Date();
+        this.currentWeekStart = new Date(today);
+        this.currentWeekStart.setDate(today.getDate() - 3); // Start 3 days ago to center today
 
-  loadCameras(): void {
-    this.cameraService.getCameras().subscribe(data => {
-      this.cameras = data;
-      // If no ID in route (or 0), select first camera
-      if (!this.selectedCameraId && this.cameras.length > 0) {
-        this.selectCamera(this.cameras[0].id);
-      }
-    });
-  }
+        this.generateDateStrip();
+        this.loadCameras();
 
-  generateDateStrip(): void {
-    const dates = [];
-    const today = new Date();
-    // Generate last 7 days + today
-    for (let i = 6; i >= 0; i--) {
-      const d = new Date();
-      d.setDate(today.getDate() - i);
-      dates.push(d);
+        // Check route for initial selection
+        this.route.paramMap.subscribe(params => {
+            const id = params.get('id');
+            if (id) {
+                this.selectCamera(Number(id));
+            }
+        });
     }
-    this.availableDates = dates;
-    this.selectedDate = today;
-  }
 
-  selectCamera(id: number): void {
-    this.selectedCameraId = id;
-    this.currentVideoUrl = null; // Reset video on camera switch
-    this.loadRecordings();
-  }
-
-  selectDate(date: Date): void {
-    this.selectedDate = date;
-    this.loadRecordings();
-  }
-
-  loadRecordings(): void {
-    if (!this.selectedCameraId) return;
-
-    this.isLoading = true;
-    const isoDate = this.selectedDate.toISOString().split('T')[0];
-    const fullDate = new Date(isoDate + 'T00:00:00').toISOString(); // Standardize
-
-    this.cameraService.getRecordings(this.selectedCameraId, fullDate).subscribe({
-      next: (data) => {
-        this.recordings = data;
-        this.isLoading = false;
-        this.setupTimeline();
-      },
-      error: (err) => {
-        console.error('Error fetching recordings:', err);
-        this.isLoading = false;
-        this.recordings = [];
-      }
-    });
-  }
-
-  playSegment(segment: RecordingSegment): void {
-    this.currentSegment = segment;
-    this.cameraService.getPlaybackUrl(this.selectedCameraId, segment.start, segment.duration)
-      .subscribe((res) => {
-        const fullUrl = `http://127.0.0.1:8000${res.playbackUrl}`;
-        this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
-      });
-  }
-
-  setupTimeline(): void {
-    if (this.recordings.length > 0) {
-      this.timelineMin = new Date(this.recordings[0].start).getTime();
-      const last = this.recordings[this.recordings.length - 1];
-      this.timelineMax = new Date(last.start).getTime() + (last.duration * 1000);
-      this.timelineValue = this.timelineMin;
-    } else {
-      this.timelineValue = 0;
+    loadCameras(): void {
+        this.cameraService.getCameras().subscribe(data => {
+            this.cameras = data;
+            if (!this.selectedCameraId && this.cameras.length > 0) {
+                this.selectCamera(this.cameras[0].id);
+            }
+        });
     }
-  }
 
-  onTimelineChange(event: any): void {
-    const timestamp = parseInt(event.target.value);
-    if (this.timelineChangeTimeout) clearTimeout(this.timelineChangeTimeout);
+    generateDateStrip(): void {
+        const dates = [];
+        const start = new Date(this.currentWeekStart);
 
-    this.timelineChangeTimeout = setTimeout(() => {
-      const isoString = new Date(timestamp).toISOString();
-      // Default play 1h chunk if seeking manually
-      this.cameraService.getPlaybackUrl(this.selectedCameraId, isoString, 3600).subscribe(res => {
-        const fullUrl = `http://127.0.0.1:8000${res.playbackUrl}`;
-        this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
-      });
-    }, 500);
-  }
+        // Generate 7 days starting from currentWeekStart
+        for (let i = 0; i < 7; i++) {
+            const d = new Date(start);
+            d.setDate(start.getDate() + i);
+            dates.push(d);
+        }
+        this.availableDates = dates;
+    }
 
-  formatDuration(seconds: number): string {
-    const mins = Math.floor(seconds / 60);
-    return mins < 1 ? '< 1 min' : `${mins} min`;
-  }
+    shiftDays(amount: number): void {
+        // Shift the window by 'amount' days (e.g. 7 for next week, 1 for next day)
+        // Let's shift by 3 days for smoother nav
+        const shift = amount < 0 ? -3 : 3;
+        this.currentWeekStart.setDate(this.currentWeekStart.getDate() + shift);
+        this.generateDateStrip();
+    }
 
-  isSameDay(d1: Date, d2: Date): boolean {
-    return d1.getDate() === d2.getDate() &&
-      d1.getMonth() === d2.getMonth() &&
-      d1.getFullYear() === d2.getFullYear();
-  }
+    onDatePick(dateStr: string): void {
+        if (!dateStr) return;
+        const date = new Date(dateStr + 'T00:00:00');
+        this.selectedDate = date;
 
-  vcformatTime(time: string | number | Date): string {
-    const d = new Date(time);
-    return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  }
+        // Center the strip around this date
+        this.currentWeekStart = new Date(date);
+        this.currentWeekStart.setDate(date.getDate() - 3);
+        this.generateDateStrip();
+
+        this.loadRecordings();
+    }
+
+    selectCamera(id: number): void {
+        this.selectedCameraId = id;
+        this.currentVideoUrl = null;
+        this.loadRecordings();
+    }
+
+    selectDate(date: Date): void {
+        this.selectedDate = date;
+        this.loadRecordings();
+    }
+
+    loadRecordings(): void {
+        if (!this.selectedCameraId) return;
+
+        this.isLoading = true;
+        const isoDate = this.selectedDate.toISOString().split('T')[0];
+        const fullDate = new Date(isoDate + 'T00:00:00').toISOString();
+
+        this.cameraService.getRecordings(this.selectedCameraId, fullDate).subscribe({
+            next: (data) => {
+                this.recordings = data;
+                this.isLoading = false;
+                this.setupTimeline();
+            },
+            error: (err) => {
+                console.error('Error fetching recordings:', err);
+                this.isLoading = false;
+                this.recordings = [];
+            }
+        });
+    }
+
+    playSegment(segment: RecordingSegment): void {
+        this.currentSegment = segment;
+        this.cameraService.getPlaybackUrl(this.selectedCameraId, segment.start, segment.duration)
+            .subscribe((res) => {
+                const fullUrl = `http://127.0.0.1:8000${res.playbackUrl}`;
+                this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
+            });
+    }
+
+    setupTimeline(): void {
+        if (this.recordings.length > 0) {
+            this.timelineMin = new Date(this.recordings[0].start).getTime();
+            const last = this.recordings[this.recordings.length - 1];
+            this.timelineMax = new Date(last.start).getTime() + (last.duration * 1000);
+            this.timelineValue = this.timelineMin;
+        } else {
+            this.timelineValue = 0;
+        }
+    }
+
+    onTimelineChange(event: any): void {
+        const timestamp = parseInt(event.target.value);
+        if (this.timelineChangeTimeout) clearTimeout(this.timelineChangeTimeout);
+
+        this.timelineChangeTimeout = setTimeout(() => {
+            const isoString = new Date(timestamp).toISOString();
+            this.cameraService.getPlaybackUrl(this.selectedCameraId, isoString, 3600).subscribe(res => {
+                const fullUrl = `http://127.0.0.1:8000${res.playbackUrl}`;
+                this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
+            });
+        }, 500);
+    }
+
+    formatDuration(seconds: number): string {
+        const mins = Math.floor(seconds / 60);
+        return mins < 1 ? '< 1 min' : `${mins} min`;
+    }
+
+    isSameDay(d1: Date, d2: Date): boolean {
+        return d1.getDate() === d2.getDate() &&
+            d1.getMonth() === d2.getMonth() &&
+            d1.getFullYear() === d2.getFullYear();
+    }
+
+    vcformatTime(time: string | number | Date): string {
+        const d = new Date(time);
+        return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
 }
