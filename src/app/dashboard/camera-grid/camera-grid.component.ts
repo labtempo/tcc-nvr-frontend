@@ -248,7 +248,7 @@ export class CameraGridComponent implements OnInit {
     this.cameras.forEach(cam => {
       // Use path_id from database instead of formatting the name
       // This ensures the URL matches the backend streaming path
-      const liveUrl = cam.path_id ? `http://localhost:8889/${cam.path_id}/` : '';
+      const liveUrl = cam.path_id_low ? `http://localhost:8889/${cam.path_id_low}/` : '';
 
       if (liveUrl && !this.urlCache.has(cam.id)) {
         this.urlCache.set(cam.id, this.sanitizer.bypassSecurityTrustResourceUrl(liveUrl));
