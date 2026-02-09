@@ -246,14 +246,11 @@ export class CameraGridComponent implements OnInit {
 
   updateUrlCache() {
     this.cameras.forEach(cam => {
+      // Use path_id from database instead of formatting the name
+      // This ensures the URL matches the backend streaming path
+      const liveUrl = cam.path_id ? `http://localhost:8889/${cam.path_id}/` : '';
 
-      const formattedName = CameraService.formatName(cam.name);
-      // Fallback or legacy simulation URL if needed, but per requirements we should prefer what came from API
-      // However, if visualisation_url_webrtc is present, we pass it directly to component
-
-      const liveUrl = `http://localhost:8889/live/${formattedName}/`;
-
-      if (!this.urlCache.has(cam.id)) {
+      if (liveUrl && !this.urlCache.has(cam.id)) {
         this.urlCache.set(cam.id, this.sanitizer.bypassSecurityTrustResourceUrl(liveUrl));
         this.rawUrlCache.set(cam.id, liveUrl);
       }
