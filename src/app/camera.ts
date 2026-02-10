@@ -20,8 +20,7 @@ export class CameraService {
   constructor(private http: HttpClient, private authService: AuthService) { }
 
   getCameras(): Observable<Camera[]> {
-    const userId = this.authService.getUserId();
-    return this.http.get<Camera[]>(`${this.apiUrl}/camera/user/${userId}`);
+    return this.http.get<Camera[]>(`${this.apiUrl}/cameras`);
   }
 
   createCamera(camera: Partial<Camera>): Observable<Camera> {

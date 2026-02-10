@@ -5,11 +5,13 @@ import { SettingsService, AppSettings } from './settings.service';
 import { ToastService } from '../shared/toast/toast.service';
 import { CameraService } from '../camera';
 import { Camera } from '../camera.model';
+import { AuthService } from '../auth/auth';
+import { UserCreateModalComponent } from './user-create-modal/user-create-modal.component';
 
 @Component({
     selector: 'app-settings',
     standalone: true,
-    imports: [CommonModule, FormsModule],
+    imports: [CommonModule, FormsModule, UserCreateModalComponent],
     templateUrl: './settings.component.html',
     styleUrls: ['./settings.component.css']
 })
@@ -19,6 +21,13 @@ export class SettingsComponent implements OnInit {
     showFavoritesModal: boolean = false;
     modalSearchTerm: string = '';
 
+    // MySQL Users
+    users: any[] = [];
+    showUserModal: boolean = false;
+
+    // Deletion Modal
+    showDeleteModal: boolean = false;
+    userToDelete: any = null;
 
     // Local copies for form binding to avoid strict mode issues
     retentionDays: number = 30;
@@ -27,7 +36,8 @@ export class SettingsComponent implements OnInit {
     constructor(
         private settingsService: SettingsService,
         private toastService: ToastService,
-        private cameraService: CameraService
+        private cameraService: CameraService,
+        public authService: AuthService
     ) {
         this.settings = this.settingsService.currentSettings;
     }
@@ -41,6 +51,18 @@ export class SettingsComponent implements OnInit {
 
         // Load cameras purely for naming purposes in the priorities list
         this.cameraService.getCameras().subscribe(cams => this.availableCameras = cams);
+
+        // Load Users if Admin
+        if (this.authService.isAdmin()) {
+            this.loadUsers();
+        }
+    }
+
+    loadUsers() {
+        this.authService.getUsers().subscribe({
+            next: (data) => this.users = data,
+            error: (err) => console.error("Error loading users", err)
+        });
     }
 
     saveSettings() {
@@ -92,5 +114,42 @@ export class SettingsComponent implements OnInit {
 
     get hiddenFavoritesCount() {
         return this.availableCameras.filter(c => this.isFavorite(c.id)).length;
+    }
+
+    // User Modal Actions
+    openUserModal() {
+        this.showUserModal = true;
+    }
+
+    onUserCreated() {
+        this.loadUsers();
+    }
+
+    // User Deletion Actions
+    openDeleteModal(user: any) {
+        this.userToDelete = user;
+        this.showDeleteModal = true;
+    }
+
+    cancelDelete() {
+        this.showDeleteModal = false;
+        this.userToDelete = null;
+    }
+
+    confirmDelete() {
+        if (!this.userToDelete) return;
+
+        this.authService.deleteUser(this.userToDelete.id).subscribe({
+            next: () => {
+                this.toastService.success(`Usuário ${this.userToDelete.full_name} removido com sucesso.`);
+                this.loadUsers(); // Reload list
+                this.cancelDelete();
+            },
+            error: (err) => {
+                console.error("Error deleting user", err);
+                this.toastService.error("Erro ao remover usuário.");
+                this.cancelDelete();
+            }
+        });
     }
 }

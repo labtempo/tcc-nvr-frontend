@@ -19,9 +19,9 @@ import Hls from 'hls.js';
               <i class="bi bi-camera-video"></i>
             </div>
 
-            <video #videoElement *ngIf="hlsUrl" class="feed-video" autoplay muted playsinline></video>
+            <video #videoElement *ngIf="(hlsUrl || webrtcUrl) && !webRtcFailed" class="feed-video" autoplay muted playsinline></video>
             
-            <iframe *ngIf="!hlsUrl && iframeUrl" 
+            <iframe *ngIf="(!hlsUrl && (!webrtcUrl || webRtcFailed) && iframeUrl)" 
                     [src]="iframeUrl"
                     class="feed-iframe"
                     frameborder="0"
@@ -266,14 +266,17 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
   @Input() variant: 'NORMAL' | 'MOTION' = 'NORMAL';
   @Input() imageSrc: string = '';
   @Input() hlsUrl: string = '';
+  @Input() webrtcUrl: string = '';
   @Input() iframeUrl: SafeResourceUrl | null = null;
   @Input() rawUrl: string = '';
 
   @ViewChild('videoElement') videoElementRef!: ElementRef<HTMLVideoElement>;
   private hls: Hls | null = null;
+  private peerConnection: RTCPeerConnection | null = null;
 
   hasError: boolean = false;
   isLoading: boolean = true;
+  webRtcFailed: boolean = false;
 
   constructor(private http: HttpClient) { }
 
@@ -281,7 +284,8 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
   }
 
   ngOnChanges(changes: SimpleChanges) {
-    if (changes['status'] || changes['rawUrl'] || changes['iframeUrl']) {
+    if (changes['status'] || changes['rawUrl'] || changes['iframeUrl'] || changes['webrtcUrl']) {
+      this.webRtcFailed = false;
       this.checkStreamState();
     }
   }
@@ -296,8 +300,15 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
       return;
     }
 
+    // Se tiver WebRTC, tentar inicia-lo (resetando erro para permitir tentativa)
+    if (this.webrtcUrl) {
+      // WebRTC init logic handles its own loading state implicitly? 
+      // We keep isLoading true until video plays
+      return;
+    }
+
     // Se tivermos URL raw para checar
-    if (this.rawUrl && !this.hlsUrl) {
+    if (this.rawUrl && !this.hlsUrl && !this.webrtcUrl) {
 
       // Ignorar verificação para YouTube (evitar CORS)
       if (this.rawUrl.includes('youtube.com') || this.rawUrl.includes('youtu.be') || this.rawUrl.includes('embed')) {
@@ -313,22 +324,23 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
           this.isLoading = false;
         },
         error: (err) => {
-          console.warn(`Stream verification failed for ${this.name}`, err);
-          // Aceitar 200 ou 0 (CORS opaco) como sucesso relativo, 
-          // mas se falhar conexão real (net::ERR_CONNECTION_REFUSED), geralmente traz status 0 com error event progress.
-          // Para simplificar: se for erro HTTP real, assume erro.
-
-          if (err.status >= 200 && err.status < 300) {
+          // Relaxed verification: 
+          // If status is 0 (CORS/Network limit) or 2xx, assume OK for Iframe.
+          // Only explicit client/server errors (4xx, 5xx) trigger Offline state.
+          // This prevents grid connection limits from blocking feeds.
+          if (err.status === 0 || (err.status >= 200 && err.status < 400)) {
             this.hasError = false;
           } else {
-            // Tratamento agressivo: qualquer erro vira offline visual
+            console.warn(`Stream verification failed for ${this.name} (${err.status})`);
             this.hasError = true;
           }
           this.isLoading = false;
         }
       });
     } else {
-      this.isLoading = false;
+      // Se não for rawUrl (ex: Iframe ou HLS direto sem check prévio), assumimos ok
+      // HLS e WebRTC tem tratamentos próprios de erro no init
+      if (!this.hlsUrl && !this.webrtcUrl) this.isLoading = false;
     }
   }
 
@@ -341,13 +353,96 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
   }
 
   ngAfterViewInit() {
-    if (this.status === 'LIVE' && this.hlsUrl) {
-      this.initPlayer();
+    if (this.status === 'LIVE') {
+      if (this.webrtcUrl) {
+        this.initWebRTC();
+      } else if (this.hlsUrl) {
+        this.initHls();
+      }
     }
   }
 
-  initPlayer() {
+  async initWebRTC() {
+    if (!this.webrtcUrl) return;
+
+    // Cleanup previous PC if any
+    if (this.peerConnection) {
+      this.peerConnection.close();
+      this.peerConnection = null;
+    }
+
     const video = this.videoElementRef.nativeElement;
+
+    try {
+      this.peerConnection = new RTCPeerConnection({
+        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+      });
+
+      this.peerConnection.addTransceiver('video', { direction: 'recvonly' });
+
+      this.peerConnection.ontrack = (event) => {
+        if (event.streams && event.streams[0]) {
+          video.srcObject = event.streams[0];
+          video.play().catch(e => console.error("WebRTC Auto-play blocked", e));
+          this.isLoading = false;
+          this.webRtcFailed = false;
+        }
+      };
+
+      this.peerConnection.onconnectionstatechange = () => {
+        if (this.peerConnection?.connectionState === 'failed') {
+          console.error('WebRTC Connection Failed');
+          this.handleWebRotCFailure();
+        }
+      };
+
+      const offer = await this.peerConnection.createOffer();
+      await this.peerConnection.setLocalDescription(offer);
+
+      this.http.post(this.webrtcUrl, offer.sdp, {
+        headers: { 'Content-Type': 'application/sdp' },
+        responseType: 'text'
+      }).subscribe({
+        next: async (answerSdp) => {
+          if (this.peerConnection) {
+            await this.peerConnection.setRemoteDescription({
+              type: 'answer',
+              sdp: answerSdp
+            });
+          }
+        },
+        error: (err) => {
+          console.error("WebRTC Negotiation Error", err);
+          this.handleWebRotCFailure();
+        }
+      });
+
+    } catch (e) {
+      console.error("Error initializing WebRTC", e);
+      this.handleWebRotCFailure();
+    }
+  }
+
+  handleWebRotCFailure() {
+    this.webRtcFailed = true;
+
+    if (this.hlsUrl) {
+      console.log("Falling back to HLS...");
+      this.initHls();
+    } else if (this.iframeUrl) {
+      console.log("Falling back to Iframe...");
+      // Template will switch to iframe because webRtcFailed is true
+      this.isLoading = true; // Wait for iframe load
+    } else {
+      this.hasError = true;
+      this.isLoading = false;
+    }
+  }
+
+  initHls() {
+    const video = this.videoElementRef.nativeElement;
+    // Clear srcObject if switching from WebRTC
+    video.srcObject = null;
 
     if (Hls.isSupported()) {
       this.hls = new Hls();
@@ -355,11 +450,23 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
       this.hls.attachMedia(video);
       this.hls.on(Hls.Events.MANIFEST_PARSED, () => {
         video.play().catch(e => console.error("Auto-play blocked", e));
+        this.isLoading = false;
+      });
+      this.hls.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          this.hasError = true;
+          this.isLoading = false;
+        }
       });
     } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
       video.src = this.hlsUrl;
       video.addEventListener('loadedmetadata', () => {
         video.play().catch(e => console.error("Auto-play blocked", e));
+        this.isLoading = false;
+      });
+      video.addEventListener('error', () => {
+        this.hasError = true;
+        this.isLoading = false;
       });
     }
   }
@@ -367,6 +474,9 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
   ngOnDestroy() {
     if (this.hls) {
       this.hls.destroy();
+    }
+    if (this.peerConnection) {
+      this.peerConnection.close();
     }
   }
 }

@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { RouterModule, Router } from '@angular/router';
+import { AuthService } from '../../auth/auth';
 
 @Component({
   selector: 'app-sidebar',
@@ -31,6 +32,9 @@ import { RouterModule } from '@angular/router';
         <a routerLink="/settings" routerLinkActive="active" class="nav-item" title="Configurações">
           <i class="bi bi-gear"></i>
         </a>
+        <button (click)="logout()" class="nav-item btn-logout" title="Sair">
+          <i class="bi bi-box-arrow-right"></i>
+        </button>
       </div>
     </div>
   `,
@@ -115,6 +119,25 @@ import { RouterModule } from '@angular/router';
       border-radius: 0 4px 4px 0;
       box-shadow: 0 0 10px var(--color-primary);
     }
+
+    .btn-logout {
+      background: transparent;
+      border: none;
+      color: var(--color-danger);
+    }
+    
+    .btn-logout:hover {
+      background: rgba(239, 68, 68, 0.1);
+      color: #ef4444;
+      box-shadow: 0 0 15px rgba(239, 68, 68, 0.1);
+    }
   `]
 })
-export class SidebarComponent { }
+export class SidebarComponent {
+  constructor(private authService: AuthService, private router: Router) { }
+
+  logout() {
+    this.authService.logout();
+    this.router.navigate(['/login']);
+  }
+}

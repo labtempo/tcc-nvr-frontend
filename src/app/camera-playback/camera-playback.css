@@ -1,0 +1,348 @@
+/* THE VAULT LAYOUT */
+.recordings-layout {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    /* Col 1: Sidebar, Col 2: Main */
+    height: 100vh;
+    overflow: hidden;
+    background-color: var(--bg-dark);
+}
+
+/* =========================================
+   COLUMN 1: CAMERAS SIDEBAR
+   ========================================= */
+.cameras-sidebar {
+    background: var(--bg-surface);
+    border-right: 1px solid var(--border-color);
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.sidebar-header h3 {
+    color: var(--text-primary);
+    font-size: 1.1rem;
+    margin-bottom: 1rem;
+    letter-spacing: 0.5px;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: 10px;
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.search-box input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid var(--border-color);
+    padding: 8px 10px 8px 32px;
+    border-radius: 6px;
+    color: white;
+    font-size: 0.85rem;
+}
+
+.camera-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem 0;
+}
+
+.camera-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 1.5rem;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    border-left: 3px solid transparent;
+    gap: 12px;
+}
+
+.camera-item:hover {
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-primary);
+}
+
+.camera-item.active {
+    background: rgba(59, 130, 246, 0.1);
+    color: white;
+    border-left-color: var(--color-primary);
+}
+
+.rec-dot {
+    width: 8px;
+    height: 8px;
+    background: var(--color-success);
+    border-radius: 50%;
+    margin-left: auto;
+    box-shadow: 0 0 6px var(--color-success);
+}
+
+/* =========================================
+   MAIN STAGE
+   ========================================= */
+.main-stage {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: radial-gradient(circle at center, #1e293b 0%, #0f172a 100%);
+}
+
+/* TOP STRIP: DATE NAVIGATOR */
+.date-strip {
+    height: 70px;
+    display: flex;
+    align-items: center;
+    padding: 0 2rem;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--border-color);
+    gap: 1.5rem;
+    z-index: 20;
+}
+
+.strip-label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: 1px;
+}
+
+.date-pills {
+    display: flex;
+    gap: 1rem;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    /* for scrollbar */
+}
+
+.date-pills::-webkit-scrollbar {
+    height: 0;
+}
+
+.date-pill {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    padding: 6px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    color: var(--text-secondary);
+    transition: all 0.2s;
+    min-width: 60px;
+}
+
+.date-pill .day-name {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+.date-pill .day-num {
+    font-size: 1.1rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.date-pill:hover {
+    border-color: var(--text-secondary);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.date-pill.active {
+    background: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+/* CONTENT GRID */
+.stage-content {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    /* Video Area | Event Feed */
+    overflow: hidden;
+}
+
+/* PLAYER WRAPPER */
+.player-wrapper {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.video-frame {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: black;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    border: 1px solid #334155;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.main-video {
+    width: 100%;
+    height: 100%;
+}
+
+.empty-player {
+    color: var(--text-muted);
+    text-align: center;
+    opacity: 0.5;
+}
+
+.empty-player i {
+    font-size: 4rem;
+    display: block;
+    margin-bottom: 1rem;
+}
+
+/* TIMELINE CONTROL */
+.timeline-control {
+    width: 100%;
+    padding: 1rem 1.5rem;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: rgba(30, 41, 59, 0.6);
+}
+
+.time-label {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--text-primary);
+    min-width: 60px;
+}
+
+.timeline-slider {
+    flex: 1;
+    height: 6px;
+    border-radius: 3px;
+    background: rgba(255, 255, 255, 0.1);
+    accent-color: var(--color-primary);
+    cursor: pointer;
+}
+
+/* EVENT FEED */
+.event-feed {
+    border-left: 1px solid var(--border-color);
+    background: rgba(15, 23, 42, 0.6);
+    display: flex;
+    flex-direction: column;
+    backdrop-filter: blur(10px);
+}
+
+.feed-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.feed-header h4 {
+    margin: 0;
+    font-size: 1rem;
+}
+
+.feed-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.event-card {
+    display: flex;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.event-card:hover {
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.event-card.active {
+    background: rgba(59, 130, 246, 0.1);
+    border-color: var(--color-primary);
+}
+
+.event-time {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 1rem;
+    color: var(--text-primary);
+    width: 70px;
+}
+
+.event-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.event-type {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+}
+
+.event-dur {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.play-icon {
+    opacity: 0;
+    color: var(--color-primary);
+    transform: translateX(-10px);
+    transition: all 0.2s;
+}
+
+.event-card:hover .play-icon,
+.event-card.active .play-icon {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.no-events {
+    padding: 3rem;
+    text-align: center;
+    color: var(--text-muted);
+    opacity: 0.6;
+}
+
+.no-events i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 1rem;
+}

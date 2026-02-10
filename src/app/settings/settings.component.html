@@ -100,6 +100,50 @@
             </div>
         </div>
 
+        <!-- Section: User Management (Admin Only) -->
+        <div class="settings-section" *ngIf="authService.isAdmin()">
+            <div class="section-header-flex">
+                <h3 class="section-title"><i class="bi bi-people"></i> Gerenciamento de Usuários</h3>
+                <button class="btn-primary" (click)="openUserModal()">
+                    <i class="bi bi-person-plus"></i> Adicionar
+                </button>
+            </div>
+
+            <div class="user-table-container glass-panel-inner">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>NOME</th>
+                            <th>EMAIL</th>
+                            <th>FUNÇÃO</th>
+                            <th style="width: 80px; text-align: center;">AÇÕES</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let user of users">
+                            <td class="primary-text">{{ user.full_name }}</td>
+                            <td class="secondary-text">{{ user.email }}</td>
+                            <td>
+                                <span class="badge" [class.badge-admin]="user.role === 'admin'"
+                                    [class.badge-viewer]="user.role !== 'admin'">
+                                    {{ user.role | uppercase }}
+                                </span>
+                            </td>
+                            <td style="text-align: center;">
+                                <button class="btn-icon-danger" *ngIf="user.id !== authService.getUserId()"
+                                    (click)="openDeleteModal(user)" title="Remover Usuário">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr *ngIf="users.length === 0">
+                            <td colspan="3" class="empty-cell">Nenhum usuário encontrado.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
         <!-- Actions -->
         <div class="settings-actions">
             <button class="btn-ghost" (click)="resetDefaults()">Restaurar Padrão</button>
@@ -147,6 +191,37 @@
         <div class="modal-footer">
             <span class="selection-info">{{ hiddenFavoritesCount }} câmeras favoritas</span>
             <button class="btn-primary" (click)="closeFavoritesModal()">Concluir</button>
+        </div>
+
+    </div>
+</div>
+
+<app-user-create-modal *ngIf="showUserModal" (close)="showUserModal = false"
+    (userCreated)="onUserCreated()"></app-user-create-modal>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-backdrop" *ngIf="showDeleteModal" (click)="cancelDelete()">
+    <div class="modal-content glass-panel" (click)="$event.stopPropagation()" style="max-width: 400px; height: auto;">
+
+        <div class="modal-header" style="border-bottom-color: rgba(239, 68, 68, 0.2);">
+            <h3 style="color: #ef4444; display: flex; align-items: center; gap: 10px;">
+                <i class="bi bi-exclamation-triangle-fill"></i> Remover Usuário
+            </h3>
+        </div>
+
+        <div class="modal-body" style="text-align: center; padding: 2rem 1.5rem;">
+            <p style="color: #cbd5e1; margin-bottom: 0.5rem; font-size: 1.1rem;">
+                Tem certeza que deseja remover o acesso de <br>
+                <strong style="color: white;">{{ userToDelete?.full_name }}</strong>?
+            </p>
+            <p style="font-size: 0.9rem; color: #94a3b8;">Esta ação não pode ser desfeita.</p>
+        </div>
+
+        <div class="modal-footer" style="justify-content: flex-end; gap: 1rem; background: rgba(239, 68, 68, 0.05);">
+            <button class="btn-ghost" (click)="cancelDelete()">Cancelar</button>
+            <button class="btn-danger" (click)="confirmDelete()">
+                <i class="bi bi-trash-fill"></i> Remover
+            </button>
         </div>
 
     </div>

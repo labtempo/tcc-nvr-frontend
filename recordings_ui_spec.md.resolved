@@ -1,0 +1,160 @@
+# Especificação de Design - Central de Gravações (Playback 2.0)
+
+Este documento descreve a reformulação da tela de Gravações para atender ao requisito de segregação clara por **Câmera > Dia > Hora**, com um visual moderno e "Streaming-like".
+
+## 1. Conceito: "The Vault" (O Cofre)
+Em vez de visitar páginas separadas, a Central de Gravações deve parecer um aplicativo desktop unificado.
+
+**Estrutura de Layout Tríade (3-Column)**:
+1.  **Seletor de Câmera** (Esquerda)
+2.  **Seletor de Data/Dia** (Meio/Topo)
+3.  **Player & Timeline** (Direita/Principal)
+
+---
+
+## 2. Detalhamento das Colunas
+
+### Coluna 1: Câmeras (Sidebar Esquerda)
+*   **Largura**: 250px (Fixa).
+*   **Estilo**: Fundo Escuro (`#0f172a`), borda direita sutil.
+*   **Cabeçalho**: Título "Fontes" + Input de Busca rápido.
+*   **Lista**:
+    *   Itens compactos (Altura ~48px).
+    *   **Estado Normal**: Texto cinza claro, ícone de câmera.
+    *   **Estado Selecionado**: Fundo Azul Glass (`rgba(59, 130, 246, 0.2)`), texto branco brilhante, barra lateral de destaque.
+    *   **Badge**: Pequeno ponto verde se estiver gravando agora (indicador de "Live").
+
+### Coluna 2: Navegador Temporal (Sidebar Meio ou Flutuante)
+*   **Opção A (Sidebar Secundária)**: Uma coluna estreita (200px) mostrando uma lista vertical de dias recentes ("Hoje", "Ontem", "12 Dez", etc.).
+*   **Opção B (Recomendada - Mais Limpa)**: Um **Date Picker Horizontal** no topo da área principal.
+    *   Semelhante a apps de agenda: `[<]  SEG 12  |  TER 13  |  QUA 14 (Active)  |  QUI 15  [>]`.
+    *   Visual "Pill" para o dia selecionado.
+
+### Área 3: Palco Principal (Player e Eventos)
+Esta é a área de foco (o resto da tela).
+
+#### O Player
+*   **Aspect Visual**: "Cinema Mode". Fundo preto absoluto.
+*   **Posição**: Topo da área principal.
+*   **Controles**: Sobrepostos ao vídeo (fade in/out no mouseover).
+
+#### A Lista de Eventos (Data-Hora)
+Aqui atendemos o requisito de "separar por data-hora". Abaixo (ou ao lado) do vídeo, apresentamos os segmentos de gravação.
+
+*   **Estilo**: "Timeline Vertical" (Feed de Eventos).
+*   **Agrupamento**:
+    *   **Cabeçalho de Hora**: "14:00 - 15:00".
+    *   **Eventos**:
+        *   14:12:05 - Detecção de Movimento (Ícone Correndo, Texto Vermelho).
+        *   14:15:00 - Gravação Contínua (Ícone Fita, Texto Azul).
+*   **Interatividade**: Clicar no item pula o vídeo imediatamente para aquele ponto.
+
+---
+
+## 3. Especificações CSS (Snippet)
+
+```css
+/* Layout Grid Principal */
+.recordings-layout {
+  display: grid;
+  grid-template-columns: 260px 1fr; /* Sidebar Câmeras + Conteúdo Principal */
+  height: 100vh;
+  overflow: hidden;
+  background-color: var(--bg-dark);
+}
+
+/* Sidebar Câmeras */
+.cameras-sidebar {
+  background: var(--bg-surface);
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+}
+
+.camera-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+  border-left: 3px solid transparent;
+}
+
+.camera-item.active {
+  background: rgba(59, 130, 246, 0.1);
+  color: white;
+  border-left-color: var(--color-primary);
+}
+
+/* Área de Conteúdo */
+.main-stage {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  position: relative;
+}
+
+/* Date Strip (Navegador de Dias) */
+.date-strip {
+  height: 60px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0 1.5rem;
+  background: rgba(15, 23, 42, 0.8);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.date-pill {
+  padding: 6px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+}
+
+.date-pill.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+}
+
+/* Timeline de Eventos (Cards) */
+.event-feed {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.event-card {
+  display: flex;
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  align-items: center;
+}
+
+.event-time {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  width: 100px;
+}
+```
+
+## 4. Fluxo de Uso
+1.  Usuário entra em "Gravações".
+2.  Seleciona **Câmera 1** na esquerda.
+3.  Seleciona **"Ontem"** na barra superior.
+4.  Vê a lista de **Eventos** e clica em "10:30" para assistir.
+
+Isso organiza a informação complexa de forma digerível e visualmente topo de linha.
