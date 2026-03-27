@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { CameraEdit } from './camera-edit';
+import { CameraEditComponent } from './camera-edit';
 
-describe('CameraEdit', () => {
-  let component: CameraEdit;
-  let fixture: ComponentFixture<CameraEdit>;
+describe('CameraEditComponent', () => {
+  let component: CameraEditComponent;
+  let fixture: ComponentFixture<CameraEditComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [CameraEdit]
+      imports: [CameraEditComponent]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(CameraEdit);
+    fixture = TestBed.createComponent(CameraEditComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

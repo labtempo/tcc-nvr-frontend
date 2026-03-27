@@ -21,19 +21,6 @@
           placeholder="rtsp://admin:pass@192.168.1.10:554/stream" required autocomplete="off">
       </div>
 
-      <!-- Toggle Switch -->
-      <div class="form-group toggle-group">
-        <label class="toggle-label" for="is_recording">
-          <span class="label-text">Gravação Automática</span>
-          <span class="label-desc">Ativar/Desativar gravação</span>
-        </label>
-
-        <label class="switch">
-          <input type="checkbox" id="is_recording" [(ngModel)]="camera.is_recording" name="is_recording">
-          <span class="slider round"></span>
-        </label>
-      </div>
-
       <!-- Actions -->
       <div class="form-actions">
         <button type="button" class="btn-ghost" [routerLink]="['/cameras']">Cancelar</button>
