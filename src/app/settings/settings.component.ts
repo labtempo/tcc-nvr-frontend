@@ -2,16 +2,19 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SettingsService, AppSettings } from './settings.service';
+import { UserPreferencesService } from './user-preferences.service';
+import { CameraOrderModalComponent } from './camera-order-modal/camera-order-modal.component';
 import { ToastService } from '../shared/toast/toast.service';
 import { CameraService } from '../camera';
 import { Camera } from '../camera.model';
 import { AuthService } from '../auth/auth';
 import { UserCreateModalComponent } from './user-create-modal/user-create-modal.component';
+import { finalize } from 'rxjs/operators';
 
 @Component({
     selector: 'app-settings',
     standalone: true,
-    imports: [CommonModule, FormsModule, UserCreateModalComponent],
+    imports: [CommonModule, FormsModule, UserCreateModalComponent, CameraOrderModalComponent],
     templateUrl: './settings.component.html',
     styleUrls: ['./settings.component.css']
 })
@@ -19,6 +22,7 @@ export class SettingsComponent implements OnInit {
     settings: AppSettings;
     availableCameras: Camera[] = [];
     showFavoritesModal: boolean = false;
+    showOrderingModal: boolean = false;
     modalSearchTerm: string = '';
 
     // MySQL Users
@@ -33,8 +37,12 @@ export class SettingsComponent implements OnInit {
     retentionDays: number = 30;
     recordingSplitMinutes: number = 1;
 
+    // Sync status
+    isSyncingPreferences: boolean = false;
+
     constructor(
         private settingsService: SettingsService,
+        private userPreferencesService: UserPreferencesService,
         private toastService: ToastService,
         private cameraService: CameraService,
         public authService: AuthService
@@ -50,12 +58,16 @@ export class SettingsComponent implements OnInit {
         });
 
         // Load cameras purely for naming purposes in the priorities list
-        this.cameraService.getCameras().subscribe(cams => this.availableCameras = cams);
+        this.loadCameras();
 
         // Load Users if Admin
         if (this.authService.isAdmin()) {
             this.loadUsers();
         }
+    }
+
+    loadCameras() {
+        this.cameraService.getCameras().subscribe(cams => this.availableCameras = cams);
     }
 
     loadUsers() {
@@ -71,7 +83,24 @@ export class SettingsComponent implements OnInit {
         this.settings.storage.recordingSplitMinutes = this.recordingSplitMinutes;
 
         this.settingsService.updateSettings(this.settings);
-        this.toastService.success('Configurações salvas com sucesso!');
+
+        // Sincronizar preferências de câmeras com o backend
+        this.isSyncingPreferences = true;
+        this.settingsService.syncCameraOrderWithBackend()
+            .pipe(
+                finalize(() => {
+                    this.isSyncingPreferences = false;
+                })
+            )
+            .subscribe({
+                next: () => {
+                    this.toastService.success('Configurações e preferências de câmeras salvas com sucesso!');
+                },
+                error: (err) => {
+                    console.error('Error syncing camera preferences:', err);
+                    this.toastService.error('Configurações salvas, mas não foi possível sincronizar preferências.');
+                }
+            });
     }
 
     resetDefaults() {
@@ -92,8 +121,20 @@ export class SettingsComponent implements OnInit {
         if (!this.settings.interface.cameraPriorities) this.settings.interface.cameraPriorities = {};
         this.settings.interface.cameraPriorities[id] = current;
 
-        // Persist
+        // Persist locally first for immediate UI feedback
         this.settingsService.setCameraPriority(id, current);
+
+        // Sincronizar com o backend em background
+        this.settingsService.syncCameraOrderWithBackend()
+            .subscribe({
+                next: () => {
+                    // Silenciosamente sincronizado
+                },
+                error: (err) => {
+                    console.error('Error syncing camera favorite:', err);
+                    this.toastService.error('Favorito salvo localmente, mas falha ao sincronizar com servidor.');
+                }
+            });
     }
 
     // Modal Actions
@@ -114,6 +155,36 @@ export class SettingsComponent implements OnInit {
 
     get hiddenFavoritesCount() {
         return this.availableCameras.filter(c => this.isFavorite(c.id)).length;
+    }
+
+    // Ordering Modal Methods
+    openOrderingModal() {
+        this.showOrderingModal = true;
+    }
+
+    closeOrderingModal() {
+        this.showOrderingModal = false;
+        // Recarregar câmeras para refletir possíveis mudanças
+        this.loadCameras();
+    }
+
+    onCameraOrderUpdated(newOrder: number[]) {
+        // Atualizar cameraPriorities baseado na nova ordem
+        const cameraPriorities: { [id: number]: number } = {};
+        newOrder.forEach((cameraId, index) => {
+            cameraPriorities[cameraId] = index + 1; // 1, 2, 3...
+        });
+
+        // Câmeras não sorteadas recebem prioridade 999
+        this.availableCameras.forEach(cam => {
+            if (!cameraPriorities[cam.id]) {
+                cameraPriorities[cam.id] = 999;
+            }
+        });
+
+        // Atualizar settings
+        this.settings.interface.cameraPriorities = cameraPriorities;
+        this.settingsService.updateSettings(this.settings);
     }
 
     // User Modal Actions

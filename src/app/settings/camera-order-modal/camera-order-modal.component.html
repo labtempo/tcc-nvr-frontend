@@ -1,0 +1,114 @@
+<div class="modal-backdrop" (click)="onBackdropClick()">
+  <div class="modal-content glass-panel" (click)="$event.stopPropagation()">
+    
+    <div class="modal-header">
+      <h3>📋 Ordenar Câmeras Favoritas</h3>
+      <button class="btn-icon-close" (click)="onClose()">
+        <i class="bi bi-x"></i>
+      </button>
+    </div>
+
+    <div class="modal-subtitle">
+      Arraste as câmeras para definir a ordem de exibição. As câmeras no topo aparecerão primeiro.
+    </div>
+
+    <div class="modal-body">
+      <!-- Favoritos (Draggable) -->
+      <div class="favorites-section">
+        <h4 class="section-label">⭐ Câmeras Favoritas (em ordem)</h4>
+        
+        <div cdkDropList
+             #favoritesList="cdkDropList"
+             [cdkDropListData]="orderedFavorites"
+             [cdkDropListDisabled]="false"
+             cdkDropListSortingDisabled="false"
+             class="camera-list favorites-list"
+             (cdkDropListDropped)="onFavoriteDropped($event)">
+          
+          <div class="camera-item-draggable" 
+               *ngFor="let cam of orderedFavorites; let i = index"
+               cdkDrag
+               [attr.data-camera-id]="cam.id">
+            
+            <div class="drag-handle" cdkDragHandle>
+              <i class="bi bi-grip-vertical"></i>
+            </div>
+            
+            <div class="camera-info">
+              <span class="camera-index">{{ i + 1 }}º</span>
+              <span class="camera-name">{{ cam.name }}</span>
+            </div>
+
+            <div class="button-group">
+              <button class="btn-control" 
+                      (click)="moveUp(i)"
+                      [disabled]="i === 0"
+                      title="Mover para cima"
+                      type="button">
+                <i class="bi bi-chevron-up"></i>
+              </button>
+              <button class="btn-control" 
+                      (click)="moveDown(i)"
+                      [disabled]="i === orderedFavorites.length - 1"
+                      title="Mover para baixo"
+                      type="button">
+                <i class="bi bi-chevron-down"></i>
+              </button>
+            </div>
+
+            <button class="btn-remove" 
+                    (click)="removeFavorite(cam.id)"
+                    title="Remover de favoritos"
+                    type="button">
+              <i class="bi bi-x-circle"></i>
+            </button>
+          </div>
+
+          <div *ngIf="orderedFavorites.length === 0" class="empty-state">
+            <i class="bi bi-inbox"></i>
+            <p>Nenhuma câmera favorita ainda</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Câmeras Disponíveis -->
+      <div class="available-section">
+        <h4 class="section-label">➕ Adicionar às Favoritas</h4>
+        
+        <div class="search-input">
+          <i class="bi bi-search"></i>
+          <input type="text" 
+                 placeholder="Filtrar câmeras..." 
+                 [(ngModel)]="searchTerm"
+                 (input)="updateAvailableList()">
+        </div>
+
+        <div class="camera-list available-list">
+          <button class="camera-item-button"
+                  *ngFor="let cam of availableForAdd"
+                  (click)="addFavorite(cam.id)"
+                  type="button">
+            
+            <i class="bi bi-plus-circle"></i>
+            <span>{{ cam.name }}</span>
+          </button>
+
+          <div *ngIf="availableForAdd.length === 0" class="empty-state">
+            <i class="bi bi-check2-circle"></i>
+            <p>Todas as câmeras são favoritas!</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <div class="drag-hint">
+        <i class="bi bi-lightbulb"></i>
+        Arraste, use setas ou clique para reordenar
+      </div>
+      <button class="btn-primary" (click)="save()" [disabled]="isSaving">
+        {{ isSaving ? '⏳ Salvando...' : '💾 Salvar Ordem' }}
+      </button>
+    </div>
+  </div>
+</div>
