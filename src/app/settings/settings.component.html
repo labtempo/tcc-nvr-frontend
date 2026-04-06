@@ -41,8 +41,8 @@
                         <i class="bi bi-star-fill"></i>
                         <span>{{ hiddenFavoritesCount }} selecionadas</span>
                     </div>
-                    <button class="btn-secondary" (click)="openFavoritesModal()">
-                        Gerenciar
+                    <button class="btn-secondary" (click)="openOrderingModal()">
+                        ✋ Arrastar para Ordenar
                     </button>
                 </div>
             </div>
@@ -226,3 +226,10 @@
 
     </div>
 </div>
+
+<!-- Camera Order Modal (Drag & Drop) -->
+<app-camera-order-modal *ngIf="showOrderingModal"
+    [cameras]="availableCameras"
+    (closed)="closeOrderingModal()"
+    (orderUpdated)="onCameraOrderUpdated($event)">
+</app-camera-order-modal>
