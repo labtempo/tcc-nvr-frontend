@@ -8,7 +8,7 @@ export interface AppSettings {
         language: 'pt-BR' | 'en-US';
     };
     interface: {
-        defaultGrid: '2x2' | '3x3' | '4x4';
+        defaultGrid: '1x1' | '2x2' | '3x3' | '4x4' | '5x5';
         autoplay: boolean;
         cameraPriorities: { [id: number]: number };
     };
