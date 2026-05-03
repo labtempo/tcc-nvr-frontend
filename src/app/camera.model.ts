@@ -2,6 +2,7 @@ export interface Camera {
   id: number;
   name: string;
   rtsp_url: string;
+  rtsp_url_low?: string;
   visualisation_url_hls?: string;
   visualisation_url_webrtc?: string;
   path_id: string;

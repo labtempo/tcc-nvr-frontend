@@ -33,6 +33,12 @@ export class SettingsComponent implements OnInit {
     showDeleteModal: boolean = false;
     userToDelete: any = null;
 
+    // Edit Modal
+    showEditModal: boolean = false;
+    userToEdit: any = null;
+    newPassword: string = '';
+    confirmPassword: string = '';
+
     // Local copies for form binding to avoid strict mode issues
     retentionDays: number = 30;
     recordingSplitMinutes: number = 1;
@@ -220,6 +226,54 @@ export class SettingsComponent implements OnInit {
                 console.error("Error deleting user", err);
                 this.toastService.error("Erro ao remover usuário.");
                 this.cancelDelete();
+            }
+        });
+    }
+
+    // User Edit Actions
+    openEditModal(user: any) {
+        this.userToEdit = user;
+        this.newPassword = '';
+        this.confirmPassword = '';
+        this.showEditModal = true;
+    }
+
+    cancelEdit() {
+        this.showEditModal = false;
+        this.userToEdit = null;
+        this.newPassword = '';
+        this.confirmPassword = '';
+    }
+
+    confirmEdit() {
+        if (!this.userToEdit) return;
+
+        // Validações
+        if (!this.newPassword) {
+            this.toastService.error("Por favor, insira uma nova senha.");
+            return;
+        }
+
+        if (this.newPassword !== this.confirmPassword) {
+            this.toastService.error("As senhas não conferem.");
+            return;
+        }
+
+        if (this.newPassword.length < 6) {
+            this.toastService.error("A senha deve ter no mínimo 6 caracteres.");
+            return;
+        }
+
+        this.authService.updateUserPassword(this.userToEdit.id, this.newPassword).subscribe({
+            next: () => {
+                this.toastService.success(`Senha de ${this.userToEdit.full_name} alterada com sucesso.`);
+                this.loadUsers();
+                this.cancelEdit();
+            },
+            error: (err) => {
+                console.error("Error updating user password", err);
+                this.toastService.error("Erro ao atualizar senha do usuário.");
+                this.cancelEdit();
             }
         });
     }
