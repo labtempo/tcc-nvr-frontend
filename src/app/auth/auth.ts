@@ -74,6 +74,15 @@ export class AuthService {
       );
   }
 
+  updateUserPassword(userId: number, newPassword: string): Observable<any> {
+    this.loadingService.show();
+    const passwordData = { password: newPassword };
+    return this.http.put<any>(`${this.apiUrl}/usuarios/${userId}`, passwordData)
+      .pipe(
+        finalize(() => this.loadingService.hide())
+      );
+  }
+
   getToken(): string | null {
     const token = localStorage.getItem('access_token');
     // console.log('AuthService.getToken:', token);

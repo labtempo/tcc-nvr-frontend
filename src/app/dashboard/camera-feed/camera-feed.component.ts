@@ -399,7 +399,12 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
       const offer = await this.peerConnection.createOffer();
       await this.peerConnection.setLocalDescription(offer);
 
-      this.http.post(this.webrtcUrl, offer.sdp, {
+      let negotiateUrl = this.webrtcUrl;
+      if (!negotiateUrl.endsWith('whep')) {
+        negotiateUrl = negotiateUrl.endsWith('/') ? `${negotiateUrl}whep` : `${negotiateUrl}/whep`;
+      }
+
+      this.http.post(negotiateUrl, offer.sdp, {
         headers: { 'Content-Type': 'application/sdp' },
         responseType: 'text'
       }).subscribe({

@@ -16,22 +16,19 @@
 
       <!-- RTSP URL -->
       <div class="form-group">
-        <label class="form-label" for="rtsp_url">URL RTSP</label>
+        <label class="form-label" for="rtsp_url">URL RTSP (Alta Qualidade)</label>
         <input id="rtsp_url" type="text" class="form-input monospace" [(ngModel)]="camera.rtsp_url" name="rtsp_url"
           placeholder="rtsp://admin:pass@192.168.1.10:554/stream" required autocomplete="off">
       </div>
 
-      <!-- Toggle Switch -->
-      <div class="form-group toggle-group">
-        <label class="toggle-label" for="is_recording">
-          <span class="label-text">Gravação Automática</span>
-          <span class="label-desc">Iniciar gravação ao criar</span>
-        </label>
-
-        <label class="switch">
-          <input type="checkbox" id="is_recording" [(ngModel)]="camera.is_recording" name="is_recording">
-          <span class="slider round"></span>
-        </label>
+      <!-- RTSP URL Low -->
+      <div class="form-group">
+        <label class="form-label" for="rtsp_url_low">URL RTSP (Baixa Qualidade) <span
+            style="color: #94a3b8; font-weight: normal;">(Opcional)</span></label>
+        <input id="rtsp_url_low" type="text" class="form-input monospace" [(ngModel)]="camera.rtsp_url_low"
+          name="rtsp_url_low" placeholder="rtsp://admin:pass@192.168.1.10:554/stream_low" autocomplete="off">
+        <span class="form-desc" style="font-size: 0.85rem; color: #94a3b8; margin-top: 0.5rem; display: block;">Se
+          disponível, para transmissão em menor resolução</span>
       </div>
 
       <!-- Actions -->

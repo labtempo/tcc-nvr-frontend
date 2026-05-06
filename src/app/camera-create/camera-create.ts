@@ -19,7 +19,8 @@ export class CameraCreateComponent {
   camera: Partial<Camera> = {
     name: '',
     rtsp_url: '',
-    is_recording: false
+    rtsp_url_low: '',
+    is_recording: true
   };
 
   constructor(
@@ -29,6 +30,7 @@ export class CameraCreateComponent {
   ) { }
 
   onCreateCamera(): void {
+    this.camera.is_recording = true;
     this.cameraService.createCamera(this.camera).subscribe(
       () => {
         this.toastService.success('Câmera criada com sucesso!');

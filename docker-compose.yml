@@ -1,0 +1,83 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    container_name: tcc-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: tcc_usr
+      POSTGRES_PASSWORD: tcc_pwd
+      POSTGRES_DB: tcc_db
+    ports:
+      - "5432:5432" # Opcional: remova se não for usar o psql fora da rede Docker
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    networks:
+      - tcc-network
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    container_name: tcc-mediamtx
+    restart: always
+    environment:
+      MTX_PROTOCOLS: "tcp"
+      # Necessário para o WebRTC descobrir o IP correto na rede da faculdade:
+      MTX_WEBRTCADDITIONALHOSTS: "IP_DA_MAQUINA_FACULDADE"
+      MTX_API: "yes"
+    ports:
+      # Offset de portas para evitar conflito com o MediaMTX do Host
+      - "18554:8554"   # RTSP
+      - "18888:8888"   # HLS
+      - "18889:8889"   # WebRTC
+      - "19997:9997"   # API
+    volumes:
+      # Volume compartilhado para que API e MediaMTX acessem gravações
+      - ./recordings:/recordings 
+    networks:
+      - tcc-network
+
+  api:
+    build: 
+      context: ./backend # ATENÇÃO: Confirme este caminho se o código da API FastApi estiver em outra pasta
+      dockerfile: Dockerfile
+    # Caso sua api já esteja em uma imagem publicada, comente o build e use a imagem:
+    # image: minha-api:latest 
+    container_name: tcc-api
+    restart: always
+    environment:
+      - DATABASE_URL=postgresql://tcc_usr:tcc_pwd@db:5432/tcc_db
+      - MEDIA_MTX_HOST=http://mediamtx:
+      - CONTROL_API_PORT=9997
+      - HLS_PORT=8888
+      - WEBRTC_PORT=8889
+    ports:
+      - "8000:8000" # Para acesso direto, caso o proxy do Nginx não seja suficiente
+    volumes:
+      - ./recordings:/recordings # Volume compartilhado com mediamtx
+    depends_on:
+      - db
+      - mediamtx
+    networks:
+      - tcc-network
+
+  frontend:
+    build:
+      context: . # Usa o código do frontend que está na raiz
+      dockerfile: dockerfile
+    container_name: tcc-frontend
+    restart: always
+    ports:
+      - "80:80" # O Frontend (e o proxy /api) ficará disponível aqui
+    depends_on:
+      - api
+    networks:
+      - tcc-network
+
+volumes:
+  db_data:
+
+networks:
+  tcc-network:
+    name: tcc-network
+    driver: bridge
