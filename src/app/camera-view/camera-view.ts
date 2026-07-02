@@ -5,6 +5,7 @@ import { HttpClient } from '@angular/common/http';
 import { CameraService } from '../camera';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { ToastService } from '../shared/toast/toast.service';
+import { environment } from '../../environments/environment';
 
 @Component({
   selector: 'app-camera-view',
@@ -47,7 +48,7 @@ export class CameraViewComponent implements OnInit {
           if (this.camera && this.camera.path_id) {
             
             const cleanPath = this.camera.path_id.replace(/^\/+|\/+$/g, '');
-            const url = `http://localhost:8889/${cleanPath}/`;
+            const url = `${environment.mediaMtxUrl}/${cleanPath}/`;
 
             this.rawUrl = url;
             this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
@@ -73,12 +74,9 @@ export class CameraViewComponent implements OnInit {
   }
 
   checkStreamState() {
-    
-    if (this.rawUrl.includes('localhost') || this.rawUrl.includes('127.0.0.1')) {
-      this.isLoading = false;
-      this.hasError = false; 
-      return;
-    }
+    // Assume o stream como disponível — o MediaMTX gerencia a disponibilidade
+    this.isLoading = false;
+    this.hasError = false;
   }
 
   onIframeLoad() {
