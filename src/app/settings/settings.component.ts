@@ -63,6 +63,9 @@ export class SettingsComponent implements OnInit {
             this.recordingSplitMinutes = this.settings.storage.recordingSplitMinutes || 1;
         });
 
+        // Load global settings from database
+        this.loadGlobalSettings();
+
         // Load cameras purely for naming purposes in the priorities list
         this.loadCameras();
 
@@ -70,6 +73,24 @@ export class SettingsComponent implements OnInit {
         if (this.authService.isAdmin()) {
             this.loadUsers();
         }
+    }
+
+    loadGlobalSettings() {
+        this.settingsService.getGlobalSettings().subscribe({
+            next: (data) => {
+                if (data.record_delete_after) {
+                    this.retentionDays = parseInt(data.record_delete_after, 10) || 60;
+                    this.settings.storage.retentionDays = this.retentionDays;
+                }
+                if (data.record_segment_duration) {
+                    this.recordingSplitMinutes = parseInt(data.record_segment_duration, 10) || 1;
+                    this.settings.storage.recordingSplitMinutes = this.recordingSplitMinutes;
+                }
+            },
+            error: (err) => {
+                console.error("Error loading global settings from backend:", err);
+            }
+        });
     }
 
     loadCameras() {
@@ -90,23 +111,37 @@ export class SettingsComponent implements OnInit {
 
         this.settingsService.updateSettings(this.settings);
 
-        // Sincronizar preferências de câmeras com o backend
         this.isSyncingPreferences = true;
-        this.settingsService.syncCameraOrderWithBackend()
-            .pipe(
-                finalize(() => {
-                    this.isSyncingPreferences = false;
-                })
-            )
-            .subscribe({
-                next: () => {
-                    this.toastService.success('Configurações e preferências de câmeras salvas com sucesso!');
-                },
-                error: (err) => {
-                    console.error('Error syncing camera preferences:', err);
-                    this.toastService.error('Configurações salvas, mas não foi possível sincronizar preferências.');
-                }
-            });
+
+        const record_delete_after = `${this.retentionDays}m`;
+        const record_segment_duration = `${this.recordingSplitMinutes}m`;
+
+        // Salvar configurações globais de gravação no backend
+        this.settingsService.updateGlobalSettings(record_segment_duration, record_delete_after).subscribe({
+            next: () => {
+                // Sincronizar preferências de câmeras com o backend
+                this.settingsService.syncCameraOrderWithBackend()
+                    .pipe(
+                        finalize(() => {
+                            this.isSyncingPreferences = false;
+                        })
+                    )
+                    .subscribe({
+                        next: () => {
+                            this.toastService.success('Configurações salvas e aplicadas com sucesso!');
+                        },
+                        error: (err) => {
+                            console.error('Error syncing camera preferences:', err);
+                            this.toastService.error('Configurações salvas, mas não foi possível sincronizar preferências.');
+                        }
+                    });
+            },
+            error: (err) => {
+                this.isSyncingPreferences = false;
+                console.error("Error saving global settings to backend:", err);
+                this.toastService.error("Erro ao salvar configurações globais de gravação.");
+            }
+        });
     }
 
     resetDefaults() {

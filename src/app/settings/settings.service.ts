@@ -1,6 +1,8 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
 import { UserPreferencesService } from './user-preferences.service';
+import { environment } from '../../environments/environment';
 
 export interface AppSettings {
     general: {
@@ -49,8 +51,32 @@ export class SettingsService {
     private settingsSubject = new BehaviorSubject<AppSettings>(this.loadSettings());
     settings$ = this.settingsSubject.asObservable();
 
-    constructor(private userPreferencesService: UserPreferencesService) {
+    private apiUrl = environment.apiUrl;
+
+    constructor(
+        private userPreferencesService: UserPreferencesService,
+        private http: HttpClient
+    ) {
         this.initializePreferences();
+    }
+
+    /**
+     * Recupera as configurações globais de gravação do backend
+     */
+    getGlobalSettings(): Observable<{ record_segment_duration: string, record_delete_after: string }> {
+        return this.http.get<{ record_segment_duration: string, record_delete_after: string }>(
+            `${this.apiUrl}/settings/global`
+        );
+    }
+
+    /**
+     * Atualiza as configurações globais de gravação no backend
+     */
+    updateGlobalSettings(record_segment_duration: string, record_delete_after: string): Observable<any> {
+        return this.http.put<any>(
+            `${this.apiUrl}/settings/global`,
+            { record_segment_duration, record_delete_after }
+        );
     }
 
     /**
