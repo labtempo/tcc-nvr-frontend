@@ -23,9 +23,7 @@ import { AuthService } from '../../auth/auth';
         <a routerLink="/playback" routerLinkActive="active" class="nav-item" title="Gravações">
           <i class="bi bi-film"></i>
         </a>
-         <a routerLink="/map" routerLinkActive="active" class="nav-item" title="Mapa">
-          <i class="bi bi-map"></i>
-        </a>
+
       </nav>
 
       <div class="bottom-links">

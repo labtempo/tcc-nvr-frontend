@@ -383,6 +383,7 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
       this.peerConnection.ontrack = (event) => {
         if (event.streams && event.streams[0]) {
           video.srcObject = event.streams[0];
+          video.muted = true; // Garante muted para evitar bloqueio de autoplay
           video.play().catch(e => console.error("WebRTC Auto-play blocked", e));
           this.isLoading = false;
           this.webRtcFailed = false;
@@ -448,6 +449,7 @@ export class CameraFeedComponent implements OnInit, OnDestroy {
     const video = this.videoElementRef.nativeElement;
     // Clear srcObject if switching from WebRTC
     video.srcObject = null;
+    video.muted = true; // Garante muted para evitar bloqueio de autoplay
 
     if (Hls.isSupported()) {
       this.hls = new Hls();
