@@ -10,7 +10,7 @@ describe('CameraPlaybackComponent', () => {
     await TestBed.configureTestingModule({
       imports: [CameraPlaybackComponent]
     })
-    .compileComponents();
+      .compileComponents();
 
     fixture = TestBed.createComponent(CameraPlaybackComponent);
     component = fixture.componentInstance;

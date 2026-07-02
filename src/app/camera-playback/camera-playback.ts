@@ -73,7 +73,7 @@ import { Camera } from '../camera.model';
             <!-- PLAYER AREA -->
             <div class="player-wrapper">
                 <div class="video-frame">
-                    <video *ngIf="currentVideoUrl; else emptyState" [src]="currentVideoUrl" autoplay
+                    <video *ngIf="currentVideoUrl; else emptyState" [src]="currentVideoUrl" autoplay muted playsinline
                         class="main-video">
                     </video>
 
@@ -658,11 +658,10 @@ export class CameraPlaybackComponent implements OnInit {
 
     playSegment(segment: RecordingSegment): void {
         this.currentSegment = segment;
-        this.cameraService.getPlaybackUrl(this.selectedCameraId, segment.start, segment.duration)
-            .subscribe((res) => {
-                const fullUrl = `http://127.0.0.1:8000${res.playbackUrl}`;
-                this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
-            });
+        const camera = this.cameras.find(c => c.id === this.selectedCameraId);
+        const path = camera ? camera.path_id : '';
+        const fullUrl = `http://127.0.0.1:8000/api/v1/playback/video?path=${path}&start=${segment.start}&duration=${segment.duration}`;
+        this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
     }
 
     setupTimeline(): void {
@@ -682,10 +681,10 @@ export class CameraPlaybackComponent implements OnInit {
 
         this.timelineChangeTimeout = setTimeout(() => {
             const isoString = new Date(timestamp).toISOString();
-            this.cameraService.getPlaybackUrl(this.selectedCameraId, isoString, 3600).subscribe(res => {
-                const fullUrl = `http://127.0.0.1:8000${res.playbackUrl}`;
-                this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
-            });
+            const camera = this.cameras.find(c => c.id === this.selectedCameraId);
+            const path = camera ? camera.path_id : '';
+            const fullUrl = `http://127.0.0.1:8000/api/v1/playback/video?path=${path}&start=${isoString}&duration=3600`;
+            this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
         }, 500);
     }
 
