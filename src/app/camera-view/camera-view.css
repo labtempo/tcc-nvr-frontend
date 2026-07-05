@@ -59,8 +59,16 @@
 }
 
 .header-content,
-.btn-icon {
+.header-actions,
+.btn-icon,
+.btn-quality-toggle {
   pointer-events: auto;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
 }
 
 .card-header h2 {
@@ -88,6 +96,58 @@
 .btn-icon:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: scale(1.1);
+}
+
+.btn-quality-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1.5px solid rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.7);
+  border-radius: 0.5rem;
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.btn-quality-toggle:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.3);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.btn-quality-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-quality-toggle.active {
+  background: rgba(59, 130, 246, 0.2);
+  border-color: rgba(59, 130, 246, 0.5);
+  color: #60a5fa;
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.2);
+}
+
+.btn-quality-toggle i {
+  font-size: 1rem;
+  transition: transform 0.3s ease;
+}
+
+.btn-quality-toggle:hover:not(:disabled) i {
+  transform: scale(1.1);
+}
+
+.quality-label {
+  display: inline-block;
+  min-width: 3rem;
 }
 
 .badge-live {

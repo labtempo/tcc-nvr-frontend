@@ -22,6 +22,9 @@ export class CameraViewComponent implements OnInit {
   rawUrl: string = '';
   hasError: boolean = false;
   isLoading: boolean = true;
+  isHighQuality: boolean = true;
+  hasLowQuality: boolean = false;
+  isSwitching: boolean = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -38,26 +41,19 @@ export class CameraViewComponent implements OnInit {
 
   ngOnInit(): void {
     const id = this.route.snapshot.paramMap.get('id');
-    
+
     if (id) {
       this.cameraService.getCameraById(Number(id)).subscribe(
         (cam: any) => {
           this.camera = cam;
           console.log('Dados da câmera recebidos:', cam);
 
+          // Verifica se existe URL de baixa qualidade
+          this.hasLowQuality = !!(cam.path_id_low && cam.visualisation_url_hls_low);
+          this.isHighQuality = true; // Começa sempre na alta qualidade
+
           if (this.camera && this.camera.path_id) {
-            
-            const cleanPath = this.camera.path_id.replace(/^\/+|\/+$/g, '');
-            const url = `${environment.mediaMtxUrl}/${cleanPath}/`;
-
-            this.rawUrl = url;
-            this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
-
-            this.isLoading = true;
-            this.hasError = false;
-
-            this.checkStreamState();
-
+            this.loadQualityStream();
           } else {
             console.error('Câmera retornada mas sem path_id:', cam);
             this.toastService.error('Câmera sem configuração de caminho (path_id).');
@@ -77,6 +73,47 @@ export class CameraViewComponent implements OnInit {
     // Assume o stream como disponível — o MediaMTX gerencia a disponibilidade
     this.isLoading = false;
     this.hasError = false;
+  }
+
+  loadQualityStream(): void {
+    if (!this.camera) return;
+
+    let url: string;
+
+    if (this.isHighQuality) {
+      url = this.camera.visualisation_url_hls ||
+            `${environment.mediaMtxUrl}/${this.camera.path_id}/`;
+    } else {
+      url = this.camera.visualisation_url_hls_low ||
+            `${environment.mediaMtxUrl}/${this.camera.path_id_low}/`;
+    }
+
+    this.rawUrl = url;
+    this.videoUrl = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+
+    this.isLoading = true;
+    this.hasError = false;
+    this.checkStreamState();
+  }
+
+  toggleQuality(): void {
+    if (!this.hasLowQuality || this.isSwitching || this.isLoading) return;
+
+    this.isSwitching = true;
+    this.isLoading = true;
+
+    // Pequeno delay para melhor UX (dá tempo do iframe atualizar)
+    setTimeout(() => {
+      this.isHighQuality = !this.isHighQuality;
+      this.loadQualityStream();
+
+      const qualityLabel = this.isHighQuality ? 'Alta' : 'Baixa';
+      this.toastService.show(`Alternado para qualidade ${qualityLabel}`, 'info');
+
+      setTimeout(() => {
+        this.isSwitching = false;
+      }, 500);
+    }, 300);
   }
 
   onIframeLoad() {
