@@ -39,7 +39,20 @@
 
       <!-- Video Container (Visible if No Error) -->
       <div class="video-container" *ngIf="!hasError">
-        <iframe *ngIf="videoUrl" [src]="videoUrl" frameborder="0" allowfullscreen (load)="onIframeLoad()">
+        <div class="placeholder-icon">
+          <i class="bi bi-camera-video"></i>
+        </div>
+
+        <!-- Vídeo nativo para WebRTC/HLS -->
+        <video #videoElement *ngIf="!webRtcFailed" class="feed-video" autoplay muted playsinline></video>
+
+        <!-- Iframe como fallback quando WebRTC/HLS falha -->
+        <iframe *ngIf="webRtcFailed && iframeUrl"
+                [src]="iframeUrl"
+                class="feed-iframe"
+                frameborder="0"
+                allowfullscreen
+                (load)="onIframeLoad()">
         </iframe>
       </div>
 
