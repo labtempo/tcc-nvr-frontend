@@ -8,9 +8,24 @@
         <h2 *ngIf="!camera" class="text-muted">Carregando...</h2>
       </div>
 
-      <button class="btn btn-icon" (click)="goBack()" title="Voltar">
-        <i class="bi bi-x-lg"></i>
-      </button>
+      <div class="header-actions">
+        <!-- Botão de Alternância de Qualidade -->
+        <button
+          *ngIf="hasLowQuality"
+          class="btn btn-quality-toggle"
+          [disabled]="isSwitching || isLoading"
+          [class.active]="!isHighQuality"
+          (click)="toggleQuality()"
+          [title]="isHighQuality ? 'Mudar para baixa qualidade' : 'Mudar para alta qualidade'">
+          <i [class]="isHighQuality ? 'bi bi-brightness-high-fill' : 'bi bi-brightness-low-fill'"></i>
+          <span class="quality-label">{{ isHighQuality ? 'Alta' : 'Baixa' }}</span>
+        </button>
+
+        <!-- Botão Fechar -->
+        <button class="btn btn-icon" (click)="goBack()" title="Voltar">
+          <i class="bi bi-x-lg"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Main Video Area -->
