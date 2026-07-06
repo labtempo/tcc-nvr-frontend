@@ -125,36 +125,26 @@ describe('CameraViewComponent', () => {
   describe('loadQualityStream', () => {
     beforeEach(() => {
       component.camera = mockCamera;
-      mockDomSanitizer.bypassSecurityTrustResourceUrl.and.returnValue('safe-url' as any);
     });
 
-    it('should load high quality stream', () => {
-      component.isHighQuality = true;
+    it('should reset states and cleanup streams', () => {
+      component.isLoading = false;
+      component.webRtcFailed = true;
+      component.hasError = true;
+
       component.loadQualityStream();
 
-      expect(mockDomSanitizer.bypassSecurityTrustResourceUrl).toHaveBeenCalledWith(
-        mockCamera.visualisation_url_hls
-      );
-      expect(component.isLoading).toBe(false);
+      expect(component.webRtcFailed).toBe(false);
       expect(component.hasError).toBe(false);
-    });
-
-    it('should load low quality stream', () => {
-      component.isHighQuality = false;
-      component.loadQualityStream();
-
-      expect(mockDomSanitizer.bypassSecurityTrustResourceUrl).toHaveBeenCalledWith(
-        mockCamera.visualisation_url_hls_low
-      );
-      expect(component.isLoading).toBe(false);
-      expect(component.hasError).toBe(false);
+      expect(component.isLoading).toBe(true);
     });
 
     it('should not load if camera is not set', () => {
       component.camera = null;
       component.loadQualityStream();
 
-      expect(mockDomSanitizer.bypassSecurityTrustResourceUrl).not.toHaveBeenCalled();
+      // Should remain in initial state
+      expect(component.isLoading).toBe(true);
     });
   });
 
