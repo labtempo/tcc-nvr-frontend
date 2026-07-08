@@ -57,7 +57,7 @@ import { Camera } from '../camera.model';
                 <button class="nav-btn" (click)="shiftDays(1)" title="Próximos Dias">
                     <i class="bi bi-chevron-right"></i>
                 </button>
-                
+
                 <div class="calendar-wrapper">
                     <input type="date" [ngModel]="selectedDate | date:'yyyy-MM-dd'" (ngModelChange)="onDatePick($event)" class="date-input-hidden">
                     <button class="nav-btn calendar-btn" title="Selecionar Data">
@@ -639,10 +639,17 @@ export class CameraPlaybackComponent implements OnInit {
         if (!this.selectedCameraId) return;
 
         this.isLoading = true;
-        const isoDate = this.selectedDate.toISOString().split('T')[0];
-        const fullDate = new Date(isoDate + 'T00:00:00').toISOString();
 
-        this.cameraService.getRecordings(this.selectedCameraId, fullDate).subscribe({
+        // Convert local date to UTC start of day (without timezone shift)
+        const year = this.selectedDate.getFullYear();
+        const month = String(this.selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(this.selectedDate.getDate()).padStart(2, '0');
+
+        // Format: YYYY-MM-DDTHH:MM:SSZ (RFC3339 UTC)
+        const startOfDay = `${year}-${month}-${day}T00:00:00Z`;
+        const endOfDay = `${year}-${month}-${day}T23:59:59Z`;
+
+        this.cameraService.getRecordings(this.selectedCameraId, startOfDay, endOfDay).subscribe({
             next: (data) => {
                 this.recordings = data;
                 this.isLoading = false;
