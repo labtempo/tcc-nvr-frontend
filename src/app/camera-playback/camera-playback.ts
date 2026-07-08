@@ -57,7 +57,7 @@ import { Camera } from '../camera.model';
                 <button class="nav-btn" (click)="shiftDays(1)" title="Próximos Dias">
                     <i class="bi bi-chevron-right"></i>
                 </button>
-                
+
                 <div class="calendar-wrapper">
                     <input type="date" [ngModel]="selectedDate | date:'yyyy-MM-dd'" (ngModelChange)="onDatePick($event)" class="date-input-hidden">
                     <button class="nav-btn calendar-btn" title="Selecionar Data">
@@ -639,10 +639,17 @@ export class CameraPlaybackComponent implements OnInit {
         if (!this.selectedCameraId) return;
 
         this.isLoading = true;
-        const isoDate = this.selectedDate.toISOString().split('T')[0];
-        const fullDate = new Date(isoDate + 'T00:00:00').toISOString();
 
-        this.cameraService.getRecordings(this.selectedCameraId, fullDate).subscribe({
+        // Convert local date to UTC start of day (without timezone shift)
+        const year = this.selectedDate.getFullYear();
+        const month = String(this.selectedDate.getMonth() + 1).padStart(2, '0');
+        const day = String(this.selectedDate.getDate()).padStart(2, '0');
+
+        // Format: YYYY-MM-DDTHH:MM:SSZ (RFC3339 UTC)
+        const startOfDay = `${year}-${month}-${day}T00:00:00Z`;
+        const endOfDay = `${year}-${month}-${day}T23:59:59Z`;
+
+        this.cameraService.getRecordings(this.selectedCameraId, startOfDay, endOfDay).subscribe({
             next: (data) => {
                 this.recordings = data;
                 this.isLoading = false;
@@ -660,7 +667,12 @@ export class CameraPlaybackComponent implements OnInit {
         this.currentSegment = segment;
         const camera = this.cameras.find(c => c.id === this.selectedCameraId);
         const path = camera ? camera.path_id : '';
-        const fullUrl = `http://127.0.0.1:8000/api/v1/playback/video?path=${path}&start=${segment.start}&duration=${segment.duration}`;
+
+        // Build URL with proper URL-encoding following MediaMTX pattern:
+        // /playback/video?path=[path]&start=[RFC3339]&duration=[seconds]
+        const startEncoded = encodeURIComponent(segment.start);
+        const pathEncoded = encodeURIComponent(path);
+        const fullUrl = `http://127.0.0.1:8000/api/v1/playback/video?path=${pathEncoded}&start=${startEncoded}&duration=${segment.duration}`;
         this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
     }
 
@@ -683,7 +695,11 @@ export class CameraPlaybackComponent implements OnInit {
             const isoString = new Date(timestamp).toISOString();
             const camera = this.cameras.find(c => c.id === this.selectedCameraId);
             const path = camera ? camera.path_id : '';
-            const fullUrl = `http://127.0.0.1:8000/api/v1/playback/video?path=${path}&start=${isoString}&duration=3600`;
+
+            // Build URL with proper URL-encoding following MediaMTX pattern
+            const startEncoded = encodeURIComponent(isoString);
+            const pathEncoded = encodeURIComponent(path);
+            const fullUrl = `http://127.0.0.1:8000/api/v1/playback/video?path=${pathEncoded}&start=${startEncoded}&duration=3600`;
             this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
         }, 500);
     }

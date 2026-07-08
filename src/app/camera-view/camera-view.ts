@@ -57,7 +57,7 @@ export class CameraViewComponent implements OnInit, OnDestroy, AfterViewInit {
           console.log('Dados da câmera recebidos:', cam);
 
           // Verifica se existe URL de baixa qualidade
-          this.hasLowQuality = !!(cam.path_id_low && cam.visualisation_url_hls_low);
+          this.hasLowQuality = !!cam.path_id_low;
           this.isHighQuality = true; // Começa sempre na alta qualidade
 
           if (this.camera && this.camera.path_id) {
@@ -137,115 +137,22 @@ export class CameraViewComponent implements OnInit, OnDestroy, AfterViewInit {
 
   private initStreamPlayback() {
     let hlsUrl: string;
-    let webrtcUrl: string;
 
     if (this.isHighQuality) {
-      hlsUrl = this.camera.visualisation_url_hls ||
-               `${environment.mediaMtxUrl}/${this.camera.path_id}/index.m3u8`;
-      webrtcUrl = this.camera.visualisation_url_webrtc ||
-                  `${environment.mediaMtxUrl}/${this.camera.path_id}`;
+      // Monta a URL HLS de alta qualidade usando o environment
+      hlsUrl = `${environment.mediaMtxUrl}/${this.camera.path_id}/index.m3u8`;
     } else {
-      hlsUrl = this.camera.visualisation_url_hls_low ||
-               `${environment.mediaMtxUrl}/${this.camera.path_id_low}/index.m3u8`;
-      webrtcUrl = this.camera.visualisation_url_webrtc_low ||
-                  `${environment.mediaMtxUrl}/${this.camera.path_id_low}`;
+      // Monta a URL HLS de baixa qualidade usando o environment
+      hlsUrl = `${environment.mediaMtxUrl}/${this.camera.path_id_low}/index.m3u8`;
     }
 
-    // Tentar WebRTC primeiro
-    if (webrtcUrl) {
-      this.initWebRTC(webrtcUrl);
-    } else if (hlsUrl) {
+    if (hlsUrl) {
       this.initHls(hlsUrl);
-    }
-  }
-
-  private async initWebRTC(webrtcUrl: string) {
-    if (!this.videoElementRef) return;
-
-    // Cleanup previous PC if any
-    if (this.peerConnection) {
-      this.peerConnection.close();
-      this.peerConnection = null;
-    }
-
-    const video = this.videoElementRef.nativeElement;
-
-    try {
-      this.peerConnection = new RTCPeerConnection({
-        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-      });
-
-      this.peerConnection.addTransceiver('video', { direction: 'recvonly' });
-
-      this.peerConnection.ontrack = (event) => {
-        if (event.streams && event.streams[0]) {
-          video.srcObject = event.streams[0];
-          video.muted = true;
-          video.play().catch(e => console.error("WebRTC Auto-play blocked", e));
-          this.isLoading = false;
-          this.webRtcFailed = false;
-        }
-      };
-
-      this.peerConnection.onconnectionstatechange = () => {
-        if (this.peerConnection?.connectionState === 'failed') {
-          console.error('WebRTC Connection Failed');
-          this.handleWebRTCFailure();
-        }
-      };
-
-      const offer = await this.peerConnection.createOffer();
-      await this.peerConnection.setLocalDescription(offer);
-
-      let negotiateUrl = webrtcUrl;
-      if (!negotiateUrl.endsWith('whep')) {
-        negotiateUrl = negotiateUrl.endsWith('/') ? `${negotiateUrl}whep` : `${negotiateUrl}/whep`;
-      }
-
-      this.http.post(negotiateUrl, offer.sdp, {
-        headers: { 'Content-Type': 'application/sdp' },
-        responseType: 'text'
-      }).subscribe({
-        next: async (answerSdp) => {
-          if (this.peerConnection) {
-            await this.peerConnection.setRemoteDescription({
-              type: 'answer',
-              sdp: answerSdp
-            });
-          }
-        },
-        error: (err) => {
-          console.error("WebRTC Negotiation Error", err);
-          this.handleWebRTCFailure();
-        }
-      });
-
-    } catch (e) {
-      console.error("Error initializing WebRTC", e);
-      this.handleWebRTCFailure();
     }
   }
 
   private handleWebRTCFailure() {
-    this.webRtcFailed = true;
-
-    // Tentar fallback para HLS
-    let hlsUrl: string;
-    if (this.isHighQuality) {
-      hlsUrl = this.camera.visualisation_url_hls ||
-               `${environment.mediaMtxUrl}/${this.camera.path_id}/index.m3u8`;
-    } else {
-      hlsUrl = this.camera.visualisation_url_hls_low ||
-               `${environment.mediaMtxUrl}/${this.camera.path_id_low}/index.m3u8`;
-    }
-
-    if (hlsUrl) {
-      console.log("Falling back to HLS...");
-      this.initHls(hlsUrl);
-    } else {
-      console.log("Falling back to Iframe...");
-      this.isLoading = true;
-    }
+    // Limpo conforme migração para HLS puro
   }
 
   private initHls(hlsUrl: string) {

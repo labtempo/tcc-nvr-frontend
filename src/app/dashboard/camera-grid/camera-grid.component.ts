@@ -65,10 +65,10 @@ import { environment } from '../../../environments/environment';
           <app-camera-feed 
             [name]="cam.name" 
             [status]="getStatus(cam)" 
-            [hlsUrl]="''"
-            [webrtcUrl]="cam.visualisation_url_webrtc || ''"
-            [iframeUrl]="getIframeUrl(cam)"
-            [rawUrl]="getRawUrl(cam)">
+            [hlsUrl]="getHlsUrl(cam)"
+            [webrtcUrl]="''"
+            [iframeUrl]="null"
+            [rawUrl]="''">
           </app-camera-feed>
           <!-- Explicit Overlay for Clicking -->
           <div class="click-overlay" (click)="viewCamera(cam)"></div>
@@ -352,6 +352,11 @@ export class CameraGridComponent implements OnInit {
     this.router.navigate(['/cameras/view', cam.id]);
   }
 
+  getHlsUrl(cam: Camera): string {
+    return cam.path_id ? `${environment.mediaMtxUrl}/${cam.path_id}/index.m3u8` : '';
+  }
+
+
   getIframeUrl(cam: Camera): SafeResourceUrl | null {
     return this.urlCache.get(cam.id) || null;
   }
@@ -392,7 +397,7 @@ export class CameraGridComponent implements OnInit {
     if (!gridContainer) return;
 
     const gridItems = Array.from(gridContainer.querySelectorAll('.grid-item')) as HTMLElement[];
-    
+
     let closestIndex = 0;
     let closestDistance = Infinity;
 
@@ -401,17 +406,17 @@ export class CameraGridComponent implements OnInit {
       if (idx === this.draggedIndex) return;
 
       const rect = item.getBoundingClientRect();
-      
+
       // Posição do centro do item em coordenadas absolutas
       const itemCenterX = rect.left + rect.width / 2;
       const itemCenterY = rect.top + rect.height / 2;
-      
+
       // Posição do ponteiro em coordenadas absolutas
       const cursorX = event.pointerPosition.x;
       const cursorY = event.pointerPosition.y;
-      
+
       const distance = Math.hypot(
-        cursorX - itemCenterX,  
+        cursorX - itemCenterX,
         cursorY - itemCenterY
       );
 
@@ -433,11 +438,11 @@ export class CameraGridComponent implements OnInit {
 
   shouldShiftAway(index: number): boolean {
     if (this.draggedIndex === null || this.targetDropIndex === null) return false;
-    
+
     // Se o índice está entre o dragged e o target, fazer shift
     const minIndex = Math.min(this.draggedIndex, this.targetDropIndex);
     const maxIndex = Math.max(this.draggedIndex, this.targetDropIndex);
-    
+
     // Câmeras no caminho do reordenamento ficam fora do caminho
     return index > minIndex && index <= maxIndex && index !== this.draggedIndex;
   }
@@ -445,10 +450,10 @@ export class CameraGridComponent implements OnInit {
   onCameraDropped(event: CdkDragDrop<Camera[]>) {
     const gridContainer = event.container.element.nativeElement as HTMLElement;
     const gridItems = Array.from(gridContainer.querySelectorAll('.grid-item')) as HTMLElement[];
-    
+
     // Usar o draggedIndex que salvamos, não o event.previousIndex
     const fromIndex = this.draggedIndex !== null ? this.draggedIndex : event.previousIndex;
-    
+
     let targetIndex = fromIndex;
     let closestDistance = Infinity;
 
@@ -457,15 +462,15 @@ export class CameraGridComponent implements OnInit {
       if (idx === fromIndex) return;
 
       const rect = item.getBoundingClientRect();
-      
+
       // Posição do centro do item em coordenadas absolutas
       const itemCenterX = rect.left + rect.width / 2;
       const itemCenterY = rect.top + rect.height / 2;
-      
+
       // Posição do drop em coordenadas absolutas
       const dropX = event.dropPoint.x;
       const dropY = event.dropPoint.y;
-      
+
       const distance = Math.hypot(
         dropX - itemCenterX,
         dropY - itemCenterY
@@ -481,11 +486,11 @@ export class CameraGridComponent implements OnInit {
     this.targetDropIndex = null;
     this.isDragging = false;
     this.draggedIndex = null;
-    
+
     if (fromIndex !== targetIndex) {
       // Reordenar no array local
       moveItemInArray(this.cameras, fromIndex, targetIndex);
-      
+
       // Atualizar prioridades com base na nova ordem
       const cameraPriorities: { [id: number]: number } = {};
       this.cameras.forEach((cam, index) => {
