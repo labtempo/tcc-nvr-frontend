@@ -667,7 +667,12 @@ export class CameraPlaybackComponent implements OnInit {
         this.currentSegment = segment;
         const camera = this.cameras.find(c => c.id === this.selectedCameraId);
         const path = camera ? camera.path_id : '';
-        const fullUrl = `http://127.0.0.1:8000/api/v1/playback/video?path=${path}&start=${segment.start}&duration=${segment.duration}`;
+
+        // Build URL with proper URL-encoding following MediaMTX pattern:
+        // /playback/video?path=[path]&start=[RFC3339]&duration=[seconds]
+        const startEncoded = encodeURIComponent(segment.start);
+        const pathEncoded = encodeURIComponent(path);
+        const fullUrl = `http://127.0.0.1:8000/api/v1/playback/video?path=${pathEncoded}&start=${startEncoded}&duration=${segment.duration}`;
         this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
     }
 
@@ -690,7 +695,11 @@ export class CameraPlaybackComponent implements OnInit {
             const isoString = new Date(timestamp).toISOString();
             const camera = this.cameras.find(c => c.id === this.selectedCameraId);
             const path = camera ? camera.path_id : '';
-            const fullUrl = `http://127.0.0.1:8000/api/v1/playback/video?path=${path}&start=${isoString}&duration=3600`;
+
+            // Build URL with proper URL-encoding following MediaMTX pattern
+            const startEncoded = encodeURIComponent(isoString);
+            const pathEncoded = encodeURIComponent(path);
+            const fullUrl = `http://127.0.0.1:8000/api/v1/playback/video?path=${pathEncoded}&start=${startEncoded}&duration=3600`;
             this.currentVideoUrl = this.sanitizer.bypassSecurityTrustUrl(fullUrl);
         }, 500);
     }
